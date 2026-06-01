@@ -48,7 +48,7 @@ Sync flow              CC turn   →  PostToolUse hook
 - **Plugin home (committed):** `/Users/you/codeGen/catalyst-plugin/`. Repo: `github.com/buildwithcatalystai/catalyst` (public).
 - **Plugin install path on the user box:** `$CLAUDE_PLUGIN_ROOT` (set by CC when invoking hooks). `.env` discovery order: process env → `$CLAUDE_PLUGIN_ROOT/.env` → `~/codeGen/catalyst-plugin/.env` → `~/codeGen/catalyst-builder/backend/.env`.
 - **Hooks are shell-out scripts**, not in-process. CC spawns `python3 ${CLAUDE_PLUGIN_ROOT}/hooks/<name>.py` per fire and pipes the event JSON to stdin. PreToolUse timeout=5s, PostToolUse/Stop timeout=10s ([hooks.json](../../../codeGen/catalyst-plugin/hooks/hooks.json)).
-- **MCP server is HTTP, not stdio.** `.mcp.json` registers `http://13.202.117.250:9000/mcp` as `catalyst-mcp` ([.mcp.json](../../../codeGen/catalyst-plugin/.mcp.json)). All tool calls go over the network — the wizard's `mcp_runner.py` is the actual server.
+- **MCP server is HTTP, not stdio.** `.mcp.json` registers `https://buildwithcatalyst.ai/mcp` as `catalyst-mcp` ([.mcp.json](../../../codeGen/catalyst-plugin/.mcp.json)). All tool calls go over the network — the wizard's `mcp_runner.py` is the actual server.
 - **Tool-name namespace varies by install path:**
   - Direct install (`~/.claude/.mcp.json`): `mcp__catalyst-mcp__<tool>`
   - Plugin install (`/plugin install catalyst@catalyst-aibuilder`): `mcp__plugin_catalyst_catalyst-mcp__<tool>` (CC turns `:` → `_`)

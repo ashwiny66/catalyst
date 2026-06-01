@@ -101,7 +101,7 @@ Hooks can re-fire on the same tool call if CC retries. PreToolUse claim is idemp
 
 ## What's NOT a hook
 
-- MCP tool calls go over HTTP to `http://13.202.117.250:9000/mcp` (wizard's `mcp_runner.py`). Hooks observe calls but don't implement them.
+- MCP tool calls go over HTTP to `https://buildwithcatalyst.ai/mcp` (wizard's `mcp_runner.py`). Hooks observe calls but don't implement them.
 - WebSocket streaming from wizard to its own UI is a separate channel — not relevant inside CC.
 
 ## When to update this file

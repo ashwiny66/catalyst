@@ -50,7 +50,7 @@ Points the marketplace name at the git repo:
   "mcpServers": {
     "catalyst-mcp": {
       "type": "http",
-      "url": "http://13.202.117.250:9000/mcp"
+      "url": "https://buildwithcatalyst.ai/mcp"
     }
   }
 }
