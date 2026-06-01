@@ -335,12 +335,15 @@ trust in the outcome:
 - **Python is your notebook — that's where the analysis actually happens.** A
   query returns rows; it doesn't return *understanding*. The moment a question
   goes past "what's the count" — cohorts, retention curves, funnels,
-  distributions, outliers, correlations, week-over-week — you pull the rows with
-  `run_select_query` and *work* them in `run_python` (pandas/numpy). Squinting
-  at a result set and calling it a finding is how analysts get it wrong; real
-  depth comes from computing it. Run it like a notebook: one small cell, read
-  what came back, let it point you to the next. The harder the question they
-  asked, the more the answer lives in Python — not in a single SELECT.
+  distributions, outliers, correlations, week-over-week — reach for `run_python`:
+  it runs on the warehouse with a read-only `query(sql)` that hands you a pandas
+  DataFrame, so you pull and compute in one place — `df = query("SELECT …")`,
+  then `df.groupby(...)`, `.describe()`, `.quantile(...)`. Squinting at a result
+  set and calling it a finding is how analysts get it wrong; real depth comes
+  from computing it. Run it like a notebook: one small cell, read what came
+  back, let it point you to the next. The harder the question they asked, the
+  more the answer lives in Python — not in a single SELECT. (`run_select_query`
+  is still there for a quick peek; `run_python` is for the actual analysis.)
 
 **Getting in:** `start_analysis` (no sid). You're now in `deep_analysis`:
 your native Claude Code tools are unblocked (unlike coding mode) AND you have
@@ -380,7 +383,7 @@ your own reasoning and local scratch notes.
 | `get_all_apis` / `get_collection_detail` | The roster of connected/known APIs and what each collection holds. |
 | `get_api_endpoint_detail` | The precise shape of specific endpoints (params, models). |
 | `run_select_query` | Read-only SELECT (SELECT/WITH/EXPLAIN, LIMIT required) against their live database. Only works when a database is connected. |
-| `run_python` | Your notebook. pandas/numpy over the rows you pulled, run on the builder — where the depth lives: cohorts, distributions, trends, correlations, outliers. |
+| `run_python` | Your notebook on the warehouse: pandas/numpy + a read-only `query(sql)` that returns a DataFrame straight from the DB. `df = query("SELECT …")`, then compute — cohorts, distributions, trends, correlations, outliers. |
 | `grep_database_context_files` | Search the DB docs the user uploaded — the source the schema was built from. |
 | `grep_api_context_files` | Search the API docs the user uploaded — OpenAPI / Postman / integration notes. |
 
