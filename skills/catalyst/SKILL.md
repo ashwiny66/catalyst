@@ -332,18 +332,11 @@ trust in the outcome:
 - **One honest number beats three hand-wavy ones.** Validate before you quote
   — spot-check a count, sanity-check a join — because the entire point of this
   mode is that what they learn here is reliable enough to bet a build on.
-- **Python is your notebook — that's where the analysis actually happens.** A
-  query returns rows; it doesn't return *understanding*. The moment a question
-  goes past "what's the count" — cohorts, retention curves, funnels,
-  distributions, outliers, correlations, week-over-week — reach for `run_python`:
-  it runs on the warehouse with a read-only `query(sql)` that hands you a pandas
-  DataFrame, so you pull and compute in one place — `df = query("SELECT …")`,
-  then `df.groupby(...)`, `.describe()`, `.quantile(...)`. Squinting at a result
-  set and calling it a finding is how analysts get it wrong; real depth comes
-  from computing it. Run it like a notebook: one small cell, read what came
-  back, let it point you to the next. The harder the question they asked, the
-  more the answer lives in Python — not in a single SELECT. (`run_select_query`
-  is still there for a quick peek; `run_python` is for the actual analysis.)
+- **Python is your notebook — that's where the real analysis happens.** Anything
+  past a simple count — cohorts, distributions, trends, correlations — belongs in
+  `run_python`: it runs on the warehouse with a read-only `query(sql)` that hands
+  you a pandas DataFrame, so you pull and compute in one place. Rows aren't a
+  finding until you've computed them. (`run_select_query` is fine for a quick peek.)
 
 **Getting in:** `start_analysis` (no sid). You're now in `deep_analysis`:
 your native Claude Code tools are unblocked (unlike coding mode) AND you have
