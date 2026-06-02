@@ -62,7 +62,7 @@ catalyst/
 │   └── plugin.json              # CC manifest: name, version, hook bindings
 ├── skills/catalyst/
 │   ├── SKILL.md                 # router + 5-phase playbook + invariants
-│   └── references/              # 01-bootstrap … 05-troubleshooting
+│   └── reference/               # 01-bootstrap … 05-tools, 06-troubleshooting
 ├── hooks/
 │   ├── catalyst-block-native.py # tool-isolation: blocks native Read/Edit/Write
 │   │                              while a build is active

@@ -1444,8 +1444,11 @@ def _run(ctx: _RunCtx, stream) -> int:
     # db_finalize / menu phases persist natively via the wizard's
     # LangGraph; the hook has nothing useful to record there.
     new_mode = (sentinel.get("mode") or "").strip()
-    if new_mode not in ("coding", "vibe_code"):
-        ctx.noop_reason = f"mode-not-coding(mode={new_mode or 'unset'})"
+    # coding/vibe_code (build) + deep_analysis (research) are all Claude-Code-
+    # driven and stream to the project view via the hook. brainstorm/db_finalize/
+    # menu persist natively via the wizard's LangGraph — never recorded here.
+    if new_mode not in ("coding", "vibe_code", "deep_analysis"):
+        ctx.noop_reason = f"mode-not-recordable(mode={new_mode or 'unset'})"
         return 0
 
     # First-time coding entry on this transcript: fast-forward the offset
@@ -1455,7 +1458,7 @@ def _run(ctx: _RunCtx, stream) -> int:
     # either session_id flipped from empty → set, OR mode flipped into
     # coding from anything else (menu, brainstorm, ...).
     became_coding = (
-        prev_mode not in ("coding", "vibe_code")
+        prev_mode not in ("coding", "vibe_code", "deep_analysis")
         or not prev_sid
         or prev_sid != session_id
     )
