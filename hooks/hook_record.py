@@ -471,45 +471,60 @@ def _maybe_update_local_sentinel(payload: Dict[str, Any]) -> None:
         )
         return  # Nothing to enrich from.
 
-    # Session_id consistency check. The local sentinel is the truth of
-    # "which build this tab is bound to"; if a tool's response says
-    # otherwise, that's a sign of cross-tab interference or a stale
-    # response we re-received. Drop the update loudly rather than
-    # silently flipping the user to a different build.
+    # A FULL project entry carries the complete identity — session_id + app_root
+    # + gen_stream_id + an explicit project mode (coding / vibe_code /
+    # deep_analysis) or a coding kickoff. That's a deliberate "enter/create this
+    # project" response, so it OWNS the sentinel and OVERRIDES any previously-
+    # active session — this is how switching from (say) an analysis project into
+    # a fresh coding project IN THE SAME TAB works (start_coding / start_analysis
+    # mint a NEW session_id; the old guard refused that as a "cross-tab race" and
+    # silently dropped the flip, so the new project never recorded). Only PARTIAL
+    # responses (a sid without the full identity — brainstorm / menu /
+    # needs_input) keep the mismatch guard, since a stray sid there shouldn't
+    # flip the tab.
+    full_mode = (
+        mode if mode in ("coding", "vibe_code", "deep_analysis")
+        else ("coding" if payload.get("kickoff_message") else "")
+    )
+    is_full_entry = bool(sid and app_root and gen_stream_id and full_mode)
+
     current = _read_sentinel() or {}
     current_sid = (current.get("session_id") or "").strip()
+
+    if is_full_entry:
+        if current_sid and current_sid != sid:
+            logger.info(
+                "sentinel switching project: %s → %s (mode=%s, full entry)",
+                current_sid[:8], sid[:8], full_mode,
+            )
+        if _write_sentinel_full(sid, app_root, gen_stream_id, full_mode):
+            logger.info("sentinel set: mode=%s session_id=%s", full_mode, sid[:8])
+        return
+
+    # Partial response — guard against a stray/cross-tab sid clobbering the
+    # active session, then patch only what's present.
     if current_sid and current_sid != sid:
         logger.warning(
-            "sentinel session_id mismatch: local=%s response=%s tool=%s — "
+            "sentinel session_id mismatch (partial): local=%s response=%s tool=%s — "
             "ignoring update (stale response or cross-tab race?)",
             current_sid[:8], sid[:8], payload.get("__tool_name__", "?"),
         )
         return
-
-    # Same branching as lifecycle.py:_maybe_update_local_sentinel.
-    if mode in ("coding", "vibe_code") and sid and app_root and gen_stream_id:
-        if _write_sentinel_full(sid, app_root, gen_stream_id, mode):
-            logger.info("sentinel set: mode=%s session_id=%s", mode, sid[:8])
-    elif payload.get("kickoff_message") and sid and app_root and gen_stream_id:
-        if _write_sentinel_full(sid, app_root, gen_stream_id, "coding"):
-            logger.info("sentinel set (kickoff): mode=coding session_id=%s", sid[:8])
-    else:
-        # Brainstorm / menu / needs_input — partial update, only what's present.
-        update: Dict[str, Any] = {"session_id": sid}
-        if mode:
-            update["mode"] = mode
-        if app_root:
-            update["app_root"] = app_root
-        if gen_stream_id:
-            update["gen_stream_id"] = gen_stream_id
-        if _patch_sentinel(update):
-            logger.info(
-                "sentinel partial update: session_id=%s%s%s%s",
-                sid[:8],
-                f" mode={mode}" if mode else "",
-                f" app_root={app_root}" if app_root else "",
-                f" gen_stream_id={gen_stream_id[:24]}" if gen_stream_id else "",
-            )
+    update: Dict[str, Any] = {"session_id": sid}
+    if mode:
+        update["mode"] = mode
+    if app_root:
+        update["app_root"] = app_root
+    if gen_stream_id:
+        update["gen_stream_id"] = gen_stream_id
+    if _patch_sentinel(update):
+        logger.info(
+            "sentinel partial update: session_id=%s%s%s%s",
+            sid[:8],
+            f" mode={mode}" if mode else "",
+            f" app_root={app_root}" if app_root else "",
+            f" gen_stream_id={gen_stream_id[:24]}" if gen_stream_id else "",
+        )
 
 
 def _maybe_clear_local_state(payload: Dict[str, Any]) -> None:
