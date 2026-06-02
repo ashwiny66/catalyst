@@ -45,13 +45,14 @@ Every section below zooms into a node here. If anything disagrees with this diag
  │ uploads,         │  │                  │  │ complete_build → │
  │ run_python.      │  │                  │  │ URLs first, menu.│
  └──────────────────┘  └──────────────────┘  └──────────────────┘
-   TRUE PEERS, not a funnel — each mode starts a fresh project on its own, so
-   you can START in any mode and MOVE to any, anytime (analysis ⇄ brainstorm ⇄
-   coding); no required order, no special "exit". start_coding scaffolds the
-   app itself, so a brand-new build no longer has to pass through brainstorm —
-   skip straight to it when the user knows what they want; route through
-   brainstorm when the spec needs shaping. Pick up an existing project with
-   send_message / restart_brainstorm. Findings + work carry in the conversation.
+   ONE PROJECT, MANY MODES — analysis ⇄ brainstorm ⇄ coding are facets of the
+   SAME project. Switching modes NEVER makes a new project — the project id is
+   STABLE; only switch_project starts a new one. Entering a mode with nothing
+   active CREATES the project; while one is active you CONTINUE it: after
+   analysis, build it with start_coding(session_id=<current>) — same project,
+   now coding (it scaffolds the app on entry). Only a clean slate (no
+   session_id) starts a fresh build; route through brainstorm when the spec
+   needs shaping. Findings + work carry in the conversation.
 
                   ╔════════════════════════════════════╗
                   ║ SENTINEL LIVE ⇒ SCOPE-LOCKED       ║
@@ -154,7 +155,7 @@ For an existing app, decide vibe-edit vs re-plan:
 | "let's brainstorm" / "plan this first" | `restart_brainstorm(<their request>)` |
 | "just code it" / "skip the questions" (in brainstorm) | `confirm` to advance past Q&A |
 | "let me understand the data first" | `start_analysis` |
-| "okay, build that" (from analysis) | `send_message` (plan) or `start_coding` (build now) |
+| "okay, build that" (from analysis) | `start_coding(session_id=<current>)` — builds THIS project (keeps its id, scaffolds on entry); or `restart_brainstorm` to plan first |
 
 Two non-negotiables: **one nudge per edit**, not every turn; and treat `completed`/`error`/`abandoned`/`generate`-interrupted as equivalent — same actions, the MCP flips status transparently.
 
@@ -193,7 +194,7 @@ The discipline that earns a business user's trust:
 - **One honest number beats three hand-wavy ones.** Validate before you quote — spot-check a count, sanity-check a join — because what they learn here is reliable enough to bet a build on.
 - **Python is your notebook.** Anything past a simple count — cohorts, distributions, trends, correlations — belongs in `run_python`: it runs with a read-only `query(sql)` that hands you a pandas DataFrame, so you pull and compute in one place. Rows aren't a finding until you've computed them.
 
-**Getting in:** `start_analysis`. Native Claude Code tools are unblocked here (unlike coding) and you have the org's read-only knowledge surface. **Moving to a build** needs no exit tool — call the entry tool and the mode flips on its own: `send_message` (→ brainstorm) or `start_coding` (build now) for something new; `send_message`/`restart_brainstorm` for an existing app. Fold the headline facts into how you open the build; findings ride along in the conversation.
+**Getting in:** `start_analysis`. Native Claude Code tools are unblocked here (unlike coding) and you have the org's read-only knowledge surface. **Moving to a build keeps THIS project** (its id is stable — switching modes never makes a new one): when the user's ready, `start_coding(session_id=<this analysis project>)` scaffolds the app and flips it to coding on the same project; or `restart_brainstorm(sid)` to shape the spec first. Fold the headline facts into how you open the build; findings ride along in the conversation.
 
 ## Tools by mode
 
@@ -208,7 +209,7 @@ The discipline that earns a business user's trust:
 | `health_check` / `list_projects` / `current_session` | Entry checks + "what am I building?" (safe from any tab). |
 | `send_message(msg)` | The loop driver — starts a new build or continues the active one; the MCP routes it to the right phase. |
 | `start_analysis()` | Fresh ANALYSIS project (read-only org tools + native tools + `run_python`). |
-| `start_coding(prompt?, app_name?)` | Fresh CODING project — **scaffolds the default full-stack app** (no brainstorm/PRD) and drops into `coding_workspace__*`. Build-now entry. |
+| `start_coding(session_id?, prompt?, app_name?)` | Enter coding. **With `session_id`** → continue THAT project (e.g. analysis→coding), keeping its id + scaffolding the app on entry. **Without** → a fresh greenfield project. Either way drops into `coding_workspace__*`. The project id changes only via `switch_project`. |
 | `confirm()` | User signals brainstorm done → coding. |
 | `restart_brainstorm(msg)` | Edit needs new data / API / integration. Archives the PRD + scopes brainstorm to the new bits. |
 | `complete_build(summary)` | After the completion JSON. Returns URLs. Idempotent. |
