@@ -13,7 +13,7 @@
 | `get_all_apis` / `get_collection_detail` | The roster of connected/known APIs and what each collection holds. |
 | `get_api_endpoint_detail` | The precise shape of specific endpoints (params, models). |
 | `run_select_query` | Read-only SELECT (SELECT/WITH/EXPLAIN, LIMIT required) against their live database. Only works when a database is connected. |
-| `run_python` | Your notebook: pandas/numpy + a read-only `query(sql)` that returns a DataFrame straight from the DB. `df = query("SELECT …")`, then compute — cohorts, distributions, trends, correlations, outliers. State persists across calls within the project. |
+| `run_python` | Your notebook: pandas/numpy + a read-only `query(sql)` that returns a DataFrame straight from the DB. `df = query("SELECT …")`, then compute — cohorts, distributions, trends, correlations, outliers. State persists across calls within the project. Lifecycle modes on the same tool: `mode='interrupt'` aborts a hanging cell (keeps your namespace); `mode='restart'` bounces with explicit `max_mem_mb` (and optional `min_mem_mb`) — clears the namespace but bounds the next workload so a runaway can't take down the EC2. |
 | `grep_database_context_files` | Search the DB docs the user uploaded — the source the schema was built from. |
 | `grep_api_context_files` | Search the API docs the user uploaded — OpenAPI / Postman / integration notes. |
 
