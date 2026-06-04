@@ -1,10 +1,10 @@
-# Coding mode — you're the engineer now
+# App Building mode — you're the engineer now
 
-> **Read this when:** `send_message` returned `mode: "coding"`, or you're driving an active coding session.
+> **Read this when:** `send_message` returned `mode: "coding"` (the internal value — it *means* App Building), or you're driving an active App Building session.
 
-## What the coding-mode handoff gives you
+## What the App Building handoff gives you
 
-When `send_message` lands in coding mode (or the moment after `confirm` flips the status), the response carries:
+When `send_message` lands in App Building mode (or the moment after `confirm` flips the status), the response carries:
 
 - `kickoff_message` — a single string with the workspace path, tech stack summary, the full PRD, the repo map, and the build rules. **This IS your build instruction.** Treat it as your first user-turn brief.
 - `app_root` — the project's working directory; every `coding_workspace__*` path is relative to it.
@@ -16,7 +16,7 @@ The PRD and repo map are inlined in `kickoff_message`. Don't re-fetch them with 
 
 ## The contract — what to do, in order
 
-1. **Acknowledge the handoff.** Tell the user "Entering coding mode." once. Don't repeat it.
+1. **Acknowledge the handoff.** Tell the user "Entering App Building mode." once. Don't repeat it.
 2. **For data work, ask the database knowledge base first.**
    - `coding_workspace__get_existing_tables_summary` lists every existing table with its purpose and relationships.
    - `coding_workspace__get_table_detail(table_name)` gives exact column names. **Column names cannot be inferred** — call this before writing any code that touches columns.
@@ -40,11 +40,11 @@ Before emitting the completion JSON:
 - For backend work, smoke-test the relevant endpoint with `coding_workspace__bash` and `curl`.
 - For end-to-end visual checks, you have `coding_workspace__playwright_run` / similar — use it on the user-flow you just built.
 
-If the user says "it looks broken" *after* completion, you're already in vibe-coding mode (see [04-vibe-coding.md](04-vibe-coding.md)). Don't re-call `complete_build` for fixes — just edit and tell them.
+If the user says "it looks broken" *after* completion, you're already in vibe-edit mode (see [04-vibe-coding.md](04-vibe-coding.md)). Don't re-call `complete_build` for fixes — just edit and tell them.
 
 ## Tool-policy enforcement
 
-While a coding session is active, native tools (Read / Edit / Write / Bash / Grep / etc.) are blocked by Catalyst's policy hook. **Always use `coding_workspace__*` instead.** If the hook blocks you, the error message names the right replacement; follow the redirect.
+While an App Building session is active, native tools (Read / Edit / Write / Bash / Grep / etc.) are blocked by Catalyst's policy hook. **Always use `coding_workspace__*` instead.** If the hook blocks you, the error message names the right replacement; follow the redirect.
 
 The allowlist still includes `TodoWrite`, `AskUserQuestion`, `Skill`, `SlashCommand`, `ToolSearch`, `ExitPlanMode`, `EnterPlanMode` — so planning + clarifying questions still work normally.
 
@@ -64,4 +64,4 @@ If the user asks "did that get saved?" the answer is always yes.
 
 ## Cost note
 
-The coding-mode LLM cost is on the user's account (Claude Code), not Catalyst's. The brainstorm and database steps run on Catalyst's account.
+The App Building LLM cost is on the user's account (Claude Code), not Catalyst's. The brainstorm and database steps run on Catalyst's account.

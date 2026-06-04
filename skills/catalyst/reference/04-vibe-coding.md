@@ -1,19 +1,19 @@
-# Vibe-coding mode — iterate after the build is shipping
+# Vibe-edit mode — iterate after the build is shipping
 
 > **Read this when:** the user wants to keep changing a project after the initial build completed, or asks about live changes appearing in the preview.
 
-## What "vibe-coding" means here
+## What "vibe-edit" means here
 
 After `complete_build` runs, the project's status flips to "completed" but the session is **not closed**. You can keep using `coding_workspace__*` tools to make changes. Every change continues to land in the same project history the wizard's ChatPane is reading. The running app updates live — typically the user just refreshes their preview tab and sees the change.
 
-The only practical difference between fresh-build coding and vibe-coding:
+The only practical difference between a fresh App Building handoff and vibe-editing:
 
 - In a fresh build, you start from a kickoff message that includes the full PRD + repo map.
-- In vibe-coding, you don't get a fresh kickoff. The user describes the change they want and you use the tools (`coding_workspace__get_repo_map`, `coding_workspace__get_prd`, `coding_workspace__read`) to figure out where it goes.
+- In vibe-edit, you don't get a fresh kickoff. The user describes the change they want and you use the tools (`coding_workspace__get_repo_map`, `coding_workspace__get_prd`, `coding_workspace__read`) to figure out where it goes.
 
 Both feel identical to the user. The wizard's history is one continuous thread.
 
-## A typical vibe-coding turn
+## A typical vibe-edit turn
 
 User: "add a CSV export button on the deliveries table"
 
@@ -31,7 +31,7 @@ The dev servers are already running and reload on file changes; you don't restar
 
 ## Don't break the persistence chain
 
-Every assistant turn during vibe-coding lands in the **same** project history as the original build. This means:
+Every assistant turn during vibe-edit lands in the **same** project history as the original build. This means:
 
 - **Don't** call `send_message(message=<idea>)` with no `session_id` for an iteration. That spawns a new project. The old project is left frozen and the new one starts from scratch.
 - **Do** keep calling `coding_workspace__*` tools for any change in the current session.
@@ -51,7 +51,7 @@ You don't need to call any other "rebind" or "resume" tool. `send_message` cover
 
 - `complete_build` — call **once** per build session, when the initial build first emits the completion JSON. Don't call it again for vibe-edits.
 - `abandon_build` — the user is done with this project, **or** the build wedged unrecoverably and a fresh start is the only path. Clears the session marker so native tools work again.
-- nothing — vibe-coding indefinitely on the same project. The session stays bound; tools stay live.
+- nothing — vibe-editing indefinitely on the same project. The session stays bound; tools stay live.
 
 ## What the user sees
 

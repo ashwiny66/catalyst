@@ -1,10 +1,12 @@
-# Tool catalog — analysis & coding surfaces
+# Tool catalog — analysis & App Building surfaces
 
 > Loaded on demand. SKILL.md keeps the lifecycle tools (flow control) + the behavioral one-liners; this is the full per-tool reference for the two workspace surfaces. The live MCP tool schemas (name/args/description) always reach you at call time — this file is the at-a-glance map of what each mode unlocks and when to reach for each.
 
 ## Analysis mode — `analysis_workspace__*` (read-only, org-scoped)
 
-**Plus ALL native Claude Code tools** (Read/Write/Edit/Bash/Grep/Glob/WebSearch/WebFetch) — available in analysis for your own reasoning and local scratch notes (they're blocked only in coding / vibe_code).
+> **Scope:** Analysis is for understanding data + one-off Python scripts + scheduled jobs (crons) — **never a web app.** Building any web/app surface (page, UI, dashboard, form, frontend, backend/API endpoint) is App Building → `start_app_building(session_id=<current>)`, not an inline native-tool build here.
+
+**Plus ALL native Claude Code tools** (Read/Write/Edit/Bash/Grep/Glob/WebSearch/WebFetch) — available in analysis for your own reasoning, scripts, and local scratch notes, NOT for building a web app (they're blocked only in App Building / vibe-edit).
 
 | Tool | What it's for |
 |---|---|
@@ -16,8 +18,9 @@
 | `run_python` | Your notebook: pandas/numpy + a read-only `query(sql)` that returns a DataFrame straight from the DB. `df = query("SELECT …")`, then compute — cohorts, distributions, trends, correlations, outliers. State persists across calls within the project. Lifecycle modes on the same tool: `mode='interrupt'` aborts a hanging cell (keeps your namespace); `mode='restart'` bounces with explicit `max_mem_mb` (and optional `min_mem_mb`) — clears the namespace but bounds the next workload so a runaway can't take down the EC2. |
 | `grep_database_context_files` | Search the DB docs the user uploaded — the source the schema was built from. |
 | `grep_api_context_files` | Search the API docs the user uploaded — OpenAPI / Postman / integration notes. |
+| `manage_crons` | List / add / remove / trigger per-project scheduled jobs (crons). Scripts + crons are the kind of automation that belongs in Analysis. |
 
-## Coding mode — `coding_workspace__*` only (native tools blocked)
+## App Building mode — `coding_workspace__*` only (native tools blocked)
 
 | Tool | Purpose |
 |---|---|

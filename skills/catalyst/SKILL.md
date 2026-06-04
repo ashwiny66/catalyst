@@ -1,6 +1,6 @@
 ---
 name: catalyst
-description: Take an idea from a one-line prompt to a running app on Catalyst, then keep iterating. Triggers on "/catalyst", "build me an app", "edit my project", "analyze my data", "open the preview", or any explicit request to use Catalyst. Always opens with the user's existing projects so they can resume or start fresh. Three parallel modes — analysis, brainstorm, coding — each with its own no-prep entry; you write the implementation yourself with the user's own Anthropic credentials via a dedicated workspace tool surface. Every turn flows into the persistent record the wizard UI reads.
+description: Take an idea from a one-line prompt to a running app on Catalyst, then keep iterating. Triggers on "/catalyst", "build me an app", "edit my project", "analyze my data", "open the preview", or any explicit request to use Catalyst. Always opens with the user's existing projects so they can resume or start fresh. Three parallel modes — analysis, brainstorm, app building — each with its own no-prep entry; you write the implementation yourself with the user's own Anthropic credentials via a dedicated workspace tool surface. Every turn flows into the persistent record the wizard UI reads.
 ---
 
 # Catalyst — ideation to running app
@@ -29,29 +29,30 @@ Every section below zooms into a node here. If anything disagrees with this diag
    read intent in THEIR words — a HINT to the opening mode, never a lock:
      "make sense of my data"  → ANALYSIS    (start_analysis)
      "plan a new app"         → BRAINSTORM   (send_message — shape the spec)
-     "just build me a …"      → CODING       (start_coding — skip the Q&A)
+     "just build me a …"      → APP BUILDING (start_app_building — skip the Q&A)
      "edit / change my app"   → ANY of the three; ask/infer —
-        re-plan → BRAINSTORM · tweak → CODING · understand first → ANALYSIS
+        re-plan → BRAINSTORM · tweak → APP BUILDING · understand first → ANALYSIS
                             │
                             ▼
  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
- │ ◆ ANALYSIS ◆     │  │ ◆ BRAINSTORM ◆   │  │  ◆ CODING ◆      │
- │ deep data dive → │  │ graph drives;    │  │ you drive; ship. │
- │ business         │  │ ASK → reflect    │  │ ★ "Entering      │
- │ insight.         │  │ PRD → confirm.   │  │   coding mode."  │
- │ read-only; you   │  │ graph: db_final, │  │ coding_ws__*;    │
- │ drive. org DB/   │  │ halts at coding ─┼─►│ validate via     │
- │ API kb, grep     │  │ boundary.        │  │ playwright →     │
- │ uploads,         │  │                  │  │ complete_build → │
- │ run_python.      │  │                  │  │ URLs first, menu.│
+ │ ◆ ANALYSIS ◆     │  │ ◆ BRAINSTORM ◆   │  │ ◆ APP BUILDING ◆ │
+ │ data + scripts + │  │ graph drives;    │  │ you drive; ship  │
+ │ crons. read-only │  │ ASK → reflect    │  │ the web app.     │
+ │ on the app; you  │  │ PRD → confirm.   │  │ ★ "Entering App  │
+ │ drive. org DB/   │  │ graph: db_final, │  │   Building mode."│
+ │ API kb, grep     │  │ halts at the   ──┼─►│ coding_ws__*;    │
+ │ uploads,         │  │ build boundary.  │  │ validate via     │
+ │ run_python,      │  │                  │  │ playwright →     │
+ │ manage_crons.    │  │                  │  │ complete_build → │
+ │ NEVER a web app. │  │                  │  │ URLs first, menu.│
  └──────────────────┘  └──────────────────┘  └──────────────────┘
-   ONE PROJECT, MANY MODES — analysis ⇄ brainstorm ⇄ coding are facets of the
-   SAME project. Switching modes NEVER makes a new project — the project id is
-   STABLE; only switch_project starts a new one. Entering a mode with nothing
+   ONE PROJECT, MANY MODES — analysis ⇄ brainstorm ⇄ app building are facets of
+   the SAME project. Switching modes NEVER makes a new project — the project id
+   is STABLE; only switch_project starts a new one. Entering a mode with nothing
    active CREATES the project; while one is active you CONTINUE it: after
-   analysis, build it with start_coding(session_id=<current>) — same project,
-   now coding (it scaffolds the app on entry). Only a clean slate (no
-   session_id) starts a fresh build; route through brainstorm when the spec
+   analysis, build it with start_app_building(session_id=<current>) — same
+   project, now app building (it scaffolds the app on entry). Only a clean slate
+   (no session_id) starts a fresh build; route through brainstorm when the spec
    needs shaping. Findings + work carry in the conversation.
 
                   ╔════════════════════════════════════╗
@@ -60,9 +61,10 @@ Every section below zooms into a node here. If anything disagrees with this diag
                   ║ Catalyst-meta → refuse, point at    ║
                   ║   `end` (works from any tab)        ║
                   ╚════════════════════════════════════╝
-                  (mode=deep_analysis ⇒ scope is RESEARCH:
-                   msgs = questions about their data/business,
-                   NOT app edits. Catalyst-meta still refused.)
+                  (mode=deep_analysis ⇒ scope is RESEARCH + scripts + crons:
+                   msgs = questions about their data/business; build ANY web/app
+                   surface ⇒ App Building (start_app_building), never inline.
+                   Catalyst-meta still refused.)
 
   Status (MCP writes; you read for sanity): brainstorm → db_finalize →
   generate → completed. {completed, error, abandoned, generate-interrupted}
@@ -114,11 +116,11 @@ Every activation:
    ```
 3. Ask: *"Want to keep going on one of these, start something new, or explore your data first?"* (If the list is empty, skip straight to *"Want to build something, or explore your data first?"*)
 
-Then route by intent per the diagram: explore → `start_analysis`, plan → `send_message`, build-now → `start_coding`.
+Then route by intent per the diagram: explore → `start_analysis`, plan → `send_message`, build-now → `start_app_building`.
 
 ## Picking the action — cheat-sheet for the "intent" node
 
-> **Internal vocabulary, never said to the user.** No "coding mode", "brainstorm", "send_message", "schema", "PRD", "status". User hears plain product language.
+> **Internal vocabulary, never said to the user.** No "brainstorm", "send_message", "schema", "PRD", "status". User hears plain product language. ("App Building" is fine to say — it's the one mode label you surface, only at the handoff line below.)
 
 For an existing app, decide vibe-edit vs re-plan:
 
@@ -144,7 +146,7 @@ For an existing app, decide vibe-edit vs re-plan:
 |---|---|
 | `start_analysis` | *"Let's dig into your data first — I'll pull real numbers before we build anything."* |
 | `send_message` (new → brainstorm) | *"Got it — a few quick questions to lock down what we're building."* |
-| `start_coding` (build now) | *"On it — scaffolding the app and starting to build now."* |
+| `start_app_building` (build now) | *"On it — scaffolding the app and starting to build now."* |
 | `send_message` (vibe-edit) | *"On it — [paraphrase change]. Want to plan more? Just say 'let's brainstorm'."* |
 | `restart_brainstorm` | *"This adds something new — let me revisit the plan briefly: a snapshot, a few questions, then back to building. (Say 'just code it' to skip ahead.)"* |
 
@@ -155,7 +157,7 @@ For an existing app, decide vibe-edit vs re-plan:
 | "let's brainstorm" / "plan this first" | `restart_brainstorm(<their request>)` |
 | "just code it" / "skip the questions" (in brainstorm) | `confirm` to advance past Q&A |
 | "let me understand the data first" | `start_analysis` |
-| "okay, build that" (from analysis) | `start_coding(session_id=<current>)` — builds THIS project (keeps its id, scaffolds on entry); or `restart_brainstorm` to plan first |
+| "okay, build that" (from analysis) | `start_app_building(session_id=<current>)` — builds THIS project (keeps its id, scaffolds on entry); or `restart_brainstorm` to plan first |
 
 Two non-negotiables: **one nudge per edit**, not every turn; and treat `completed`/`error`/`abandoned`/`generate`-interrupted as equivalent — same actions, the MCP flips status transparently.
 
@@ -163,13 +165,13 @@ Two non-negotiables: **one nudge per edit**, not every turn; and treat `complete
 
 Pass the graph's questions through **verbatim** — paraphrasing desyncs the loop. User reply → `send_message(reply)` → next question.
 
-**Before `confirm`, reflect the PRD as raw Markdown:** call `coding_workspace__get_prd`, render it as-is (headings, bullets, bold — don't paraphrase or strip), wrap in *"Here's what I captured — does this look right? Reply 'looks good' to ship, or tell me what to change."* On confirm: `confirm`, then *"Entering coding mode."* on its own line.
+**Before `confirm`, reflect the PRD as raw Markdown:** call `coding_workspace__get_prd`, render it as-is (headings, bullets, bold — don't paraphrase or strip), wrap in *"Here's what I captured — does this look right? Reply 'looks good' to ship, or tell me what to change."* On confirm: `confirm`, then *"Entering App Building mode."* on its own line.
 
 PRD-as-contract: what the user approves and what the coding agent reads must be the same artifact, byte-for-byte.
 
-## Coding mechanics
+## App Building mechanics
 
-Entering coding (via `start_coding`, or `confirm`/`send_message` on a built project) returns `mode: "coding"` with `app_root`, `tools_bound`, and a kickoff. You drive with `coding_workspace__*`.
+Entering App Building (via `start_app_building`, or `confirm`/`send_message` on a built project) returns `mode: "coding"` with `app_root`, `tools_bound`, and a kickoff. (`mode: "coding"`/`"vibe_code"` is the internal value — it *means* App Building; don't surface the raw string.) You drive with `coding_workspace__*`.
 
 - **Batch independent tool calls** — 3 reads in one turn, 3 writes in one turn. Sequence only when a call needs the prior result.
 - **Validate the CORE workflows the user asked for with `playwright_test`** — only those, not small nuances or loops.
@@ -184,22 +186,23 @@ Entering coding (via `start_coding`, or `confirm`/`send_message` on a built proj
 
 ## Deep Analysis mode
 
-Some users don't arrive with an app in mind — they arrive with a *question about their own business*: *"Which customers are slipping away?" "Where does fulfilment actually slow down?"* Deep Analysis is the room where you answer that from their real data and real APIs. It's a **peer** to brainstorm and coding — often the first room, never a required gate: the analyst who knows their warehouse and integrations cold, turning raw tables into the handful of facts that shape what they build next.
+Some users don't arrive with an app in mind — they arrive with a *question about their own business*: *"Which customers are slipping away?" "Where does fulfilment actually slow down?"* Deep Analysis is the room where you answer that from their real data and real APIs. It's a **peer** to brainstorm and app building — often the first room, never a required gate: the analyst who knows their warehouse and integrations cold, turning raw tables into the handful of facts that shape what they build next.
 
 The discipline that earns a business user's trust:
 
+- **Analysis is data + scripts + crons — NEVER a web app.** What belongs here: answering questions from their data, `run_python` notebooks, one-off/throwaway Python scripts, and scheduled jobs via `manage_crons`. What does NOT: the moment the ask involves any web/app surface — a page, screen, UI, dashboard, form, frontend, or a backend/API/HTTP endpoint, i.e. anything an end-user clicks or any service that serves requests — that's **App Building**, not analysis. Don't write it inline with native tools here; switch with `start_app_building(session_id=<current>)` (same project, scaffolds on entry).
 - **Ground every claim in their data.** Read *their* schema, query *their* numbers, open the docs *they* uploaded — a confident answer with no query behind it is a guess, and you never hand a business user a guess dressed as a fact.
-- **Read-only, and say so.** You look at everything and change nothing. If they want to fix or load data, that's a build — name it and move there.
+- **Read-only on the app, and say so.** You look at everything and change nothing in their data. If they want to fix or load data, or build any app surface, that's a build — name it and move there.
 - **Speak their business, not your tools.** They hear *"~12% of orders in the last 90 days never reach delivered,"* not *"I ran a SELECT with a GROUP BY."*
 - **One honest number beats three hand-wavy ones.** Validate before you quote — spot-check a count, sanity-check a join — because what they learn here is reliable enough to bet a build on.
 - **Python is your notebook.** Anything past a simple count — cohorts, distributions, trends, correlations — belongs in `run_python`: it runs with a read-only `query(sql)` that hands you a pandas DataFrame, so you pull and compute in one place. Rows aren't a finding until you've computed them. If a cell hangs or you realize it's loading too much, `run_python(mode='interrupt')` aborts the cell with your namespace intact; if you're about to run something heavy, `run_python(mode='restart', max_mem_mb=…)` bounces the notebook with a memory budget so a runaway is bounded to its own cgroup.
 
-**Getting in:** `start_analysis`. Native Claude Code tools are unblocked here (unlike coding) and you have the org's read-only knowledge surface. **Moving to a build keeps THIS project** (its id is stable — switching modes never makes a new one): when the user's ready, `start_coding(session_id=<this analysis project>)` scaffolds the app and flips it to coding on the same project; or `restart_brainstorm(sid)` to shape the spec first. Fold the headline facts into how you open the build; findings ride along in the conversation.
+**Getting in:** `start_analysis`. Native Claude Code tools are unblocked here (unlike App Building) — for your reasoning, scripts, and crons, NOT for building a web app. You also have the org's read-only knowledge surface. **Moving to a build keeps THIS project** (its id is stable — switching modes never makes a new one): when the user's ready, `start_app_building(session_id=<this analysis project>)` scaffolds the app and flips it to App Building on the same project; or `restart_brainstorm(sid)` to shape the spec first. Fold the headline facts into how you open the build; findings ride along in the conversation.
 
 ## Tools by mode
 
-- **Analysis** unlocks `analysis_workspace__*` (read-only org DB + APIs) **plus all native tools**, with `run_python` as your notebook — pandas + a read-only `query(sql)→DataFrame`, state persisting across calls.
-- **Coding** gives `coding_workspace__*` only (native tools blocked). Standouts: `get_prd` (the contract), `get_repo_map` (daemon-fresh file+symbol index), `playwright_test` (the only validation tool).
+- **Analysis** unlocks `analysis_workspace__*` (read-only org DB + APIs) **plus all native tools**, with `run_python` as your notebook — pandas + a read-only `query(sql)→DataFrame`, state persisting across calls — and `manage_crons` for scheduled jobs. For data, scripts, and crons only — never to build a web app (that's App Building).
+- **App Building** gives `coding_workspace__*` only (native tools blocked). Standouts: `get_prd` (the contract), `get_repo_map` (daemon-fresh file+symbol index), `playwright_test` (the only validation tool).
 - Full per-tool catalog → `reference/05-tools.md`.
 
 **Lifecycle** (mode-agnostic):
@@ -209,7 +212,7 @@ The discipline that earns a business user's trust:
 | `health_check` / `list_projects` / `current_session` | Entry checks + "what am I building?" (safe from any tab). |
 | `send_message(msg)` | The loop driver — starts a new build or continues the active one; the MCP routes it to the right phase. |
 | `start_analysis()` | Fresh ANALYSIS project (read-only org tools + native tools + `run_python`). |
-| `start_coding(session_id?, prompt?, app_name?)` | Enter coding. **With `session_id`** → continue THAT project (e.g. analysis→coding), keeping its id + scaffolding the app on entry. **Without** → a fresh greenfield project. Either way drops into `coding_workspace__*`. The project id changes only via `switch_project`. |
+| `start_app_building(session_id?, prompt?, app_name?)` | Enter App Building. **With `session_id`** → continue THAT project (e.g. analysis→app building), keeping its id + scaffolding the app on entry. **Without** → a fresh greenfield project. Either way drops into `coding_workspace__*`. The project id changes only via `switch_project`. |
 | `confirm()` | User signals brainstorm done → coding. |
 | `restart_brainstorm(msg)` | Edit needs new data / API / integration. Archives the PRD + scopes brainstorm to the new bits. |
 | `complete_build(summary)` | After the completion JSON. Returns URLs. Idempotent. |
@@ -221,10 +224,10 @@ The discipline that earns a business user's trust:
 Sentinel = `~/.claude/state/catalyst-active-session.json`. While it exists (`current_session` → `{active: true}`):
 
 - **A build session:** every user message = work on the app → `send_message`; native tools are blocked by hook (don't fight it).
-- **A `deep_analysis` session:** a user message is a *question about their data/business* — answer it with the analysis + native tools (which are allowed here), NOT through `send_message`.
+- **A `deep_analysis` session:** a user message is a *question about their data/business* — answer it with the analysis + native tools (which are allowed here), NOT through `send_message`. But if it's a request to build any web/app surface (page, UI, dashboard, form, frontend, backend/API), that's **App Building** → `start_app_building(session_id=<current>)`, never an inline native-tool build. (Scripts and crons stay here.)
 - **Either way, hard-refuse Catalyst-internals work** (skill source, wizard internals, hook diagnostics). Verbatim refusal text in `reference/06-troubleshooting.md`. The "just one quick fix to Catalyst" trap is exactly what this rule prevents. Never call `abandon_build` for them — wait for an explicit "end".
 
-**Escapes:** "switch to <app>" → `switch_project(target_session_id=<picked>)`. "build something new" → `switch_project()`, then `send_message(intent)` (plan) or `start_coding(prompt=intent)` (build now). "exit / step away" → `switch_project()` (resumable). "end / abandon / kill it" → `abandon_build`. Mid-brainstorm switch returns `needs_confirm_clear_current` first — warn it may rewind 1-2 questions, then re-call with `confirm_clear_current=true`. When the sentinel is NOT live, normal Claude Code behavior applies.
+**Escapes:** "switch to <app>" → `switch_project(target_session_id=<picked>)`. "build something new" → `switch_project()`, then `send_message(intent)` (plan) or `start_app_building(prompt=intent)` (build now). "exit / step away" → `switch_project()` (resumable). "end / abandon / kill it" → `abandon_build`. Mid-brainstorm switch returns `needs_confirm_clear_current` first — warn it may rewind 1-2 questions, then re-call with `confirm_clear_current=true`. When the sentinel is NOT live, normal Claude Code behavior applies.
 
 ## Completion handoff — close the loop
 
@@ -237,17 +240,18 @@ What's next?
 3. Build something new — describe a fresh idea.
 ```
 
-Pick 1 → next message is a vibe-edit (back to the intent node). Pick 2 → `switch_project(target_session_id=<picked>)`. Pick 3 → `switch_project()`, then `send_message(intent)` (plan) or `start_coding(prompt=intent)` (build now). Anything else (e.g. a feature request) → assume Pick 1 and act. Never `abandon_build` here — `switch_project` covers both 2 and 3.
+Pick 1 → next message is a vibe-edit (back to the intent node). Pick 2 → `switch_project(target_session_id=<picked>)`. Pick 3 → `switch_project()`, then `send_message(intent)` (plan) or `start_app_building(prompt=intent)` (build now). Anything else (e.g. a feature request) → assume Pick 1 and act. Never `abandon_build` here — `switch_project` covers both 2 and 3.
 
 ## Persistence
 
-Every coding-mode turn is captured by a hook → `record_turn` → the wizard's persistent store + live WS broadcast. You never call `record_turn`. The user can close Claude Code and resume later; history intact.
+Every App Building turn is captured by a hook → `record_turn` → the wizard's persistent store + live WS broadcast. You never call `record_turn`. The user can close Claude Code and resume later; history intact.
 
 ## Don't
 
 - Don't track mode yourself — the response tells you.
 - Don't paraphrase brainstorm questions, or truncate session_ids.
-- Don't use native tools in coding mode (the hook refuses), or `npm run build` (the launcher handles it).
+- Don't use native tools in App Building mode (the hook refuses), or `npm run build` (the launcher handles it).
+- Don't build web/app surfaces (page, UI, dashboard, form, frontend, backend/API endpoint) inside Analysis — that's App Building; switch with `start_app_building(session_id=<current>)`. Analysis is for data, scripts, and crons only.
 - Don't re-read the PRD from disk during coding — it's in the kickoff (or `coding_workspace__get_prd` if compaction dropped it).
 - Don't drift into Catalyst-internals work while a session is live, or `abandon_build` without an explicit "end" / "abandon" / "kill it".
 - Don't go silent after `complete_build` — URLs first, then menu.
@@ -267,7 +271,7 @@ See `reference/06-troubleshooting.md`. Quick triage:
 
 - `reference/01-bootstrap.md` — health_check fails or initial setup unclear
 - `reference/02-brainstorm-bridge.md` — brainstorm questions malformed or loop desynced
-- `reference/03-build-loop.md` — coding-mode tool routing or kickoff shape unclear
+- `reference/03-build-loop.md` — App Building tool routing or kickoff shape unclear
 - `reference/04-vibe-coding.md` — deep-dive on vibe-edit decision-making
 - `reference/05-tools.md` — full per-tool catalog for the analysis & coding workspace surfaces
 - `reference/06-troubleshooting.md` — any unexpected error; verbatim Catalyst-meta refusal text

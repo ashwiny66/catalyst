@@ -10,7 +10,7 @@ While the App Builder Graph is driving (status `brainstorm` or `db_finalize`):
 2. The build pushes your reply through, runs another loop, and returns one of:
    - `status: "needs_input"` with a `question` — surface to the user, wait, and call `send_message` again with their reply.
    - `status: "still_running"` — the build is mid-thought (typically running a database migration). Tell the user "running migrations…", call `send_message(message="", session_id=<id>)` after a beat to re-poll, **or** just call `drain_question(session_id)` directly.
-   - `status: "ready_to_code"` — brainstorm is done, the app is about to start being built. Tell the user "Entering coding mode." Then send any non-empty message via `send_message` and you'll receive the coding-mode payload.
+   - `status: "ready_to_code"` — brainstorm is done, the app is about to start being built. Tell the user "Entering App Building mode." Then send any non-empty message via `send_message` and you'll receive the App Building payload.
    - `status: "error"` — something broke. `abandon_build` and tell the user.
 
 That's the entire mechanic. Every brainstorm question, the user's reply, the database confirmation, the migration progress — all of it flows through `send_message`.
