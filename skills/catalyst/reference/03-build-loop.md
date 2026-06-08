@@ -1,10 +1,10 @@
-# App Building mode — you're the engineer now
+# Build mode — you're the engineer now
 
-> **Read this when:** `send_message` returned `mode: "coding"` (the internal value — it *means* App Building), or you're driving an active App Building session.
+> **Read this when:** `send_message` returned `mode: "coding"` (the internal value — it *means* Build), or you're driving an active Build session.
 
-## What the App Building handoff gives you
+## What the Build handoff gives you
 
-When `send_message` lands in App Building mode (or the moment after `confirm` flips the status), the response carries:
+When `send_message` lands in Build mode (or the moment after `confirm` flips the status), the response carries:
 
 - `kickoff_message` — a single string with the workspace path, tech stack summary, the full PRD, the repo map, and the build rules. **This IS your build instruction.** Treat it as your first user-turn brief.
 - `app_root` — the project's working directory; every `coding_workspace__*` path is relative to it.
@@ -16,7 +16,7 @@ The PRD and repo map are inlined in `kickoff_message`. Don't re-fetch them with 
 
 ## The contract — what to do, in order
 
-1. **Acknowledge the handoff.** Tell the user "Entering App Building mode." once. Don't repeat it.
+1. **Acknowledge the handoff.** Tell the user "Entering Build mode." once. Don't repeat it.
 2. **For data work, ask the database knowledge base first.**
    - `coding_workspace__get_existing_tables_summary` lists every existing table with its purpose and relationships.
    - `coding_workspace__get_table_detail(table_name)` gives exact column names. **Column names cannot be inferred** — call this before writing any code that touches columns.
@@ -44,7 +44,7 @@ If the user says "it looks broken" *after* completion, you're already in vibe-ed
 
 ## Tool-policy enforcement
 
-While an App Building session is active, native tools (Read / Edit / Write / Bash / Grep / etc.) are blocked by Catalyst's policy hook. **Always use `coding_workspace__*` instead.** If the hook blocks you, the error message names the right replacement; follow the redirect.
+While a Build session is active, native tools (Read / Edit / Write / Bash / Grep / etc.) are blocked by Catalyst's policy hook. **Always use `coding_workspace__*` instead.** If the hook blocks you, the error message names the right replacement; follow the redirect.
 
 The allowlist still includes `TodoWrite`, `AskUserQuestion`, `Skill`, `SlashCommand`, `ToolSearch`, `ExitPlanMode`, `EnterPlanMode` — so planning + clarifying questions still work normally.
 
@@ -64,4 +64,4 @@ If the user asks "did that get saved?" the answer is always yes.
 
 ## Cost note
 
-The App Building LLM cost is on the user's account (Claude Code), not Catalyst's. The brainstorm and database steps run on Catalyst's account.
+The Build LLM cost is on the user's account (Claude Code), not Catalyst's. The Spec and database steps run on Catalyst's account.

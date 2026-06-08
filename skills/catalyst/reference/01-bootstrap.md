@@ -57,5 +57,5 @@ You almost never need to read these directly — every tool you call works witho
 | What | How you read it |
 |---|---|
 | Active build session | `current_session` tool |
-| Recent project list | `list_projects` tool |
+| Recent Mindspace list | `list_mindspaces` tool |
 | Account / setup status | `health_check` tool |

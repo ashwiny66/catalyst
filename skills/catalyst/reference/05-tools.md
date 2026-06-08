@@ -1,12 +1,12 @@
-# Tool catalog — analysis & App Building surfaces
+# Tool catalog — Discover & Build surfaces
 
 > Loaded on demand. SKILL.md keeps the lifecycle tools (flow control) + the behavioral one-liners; this is the full per-tool reference for the two workspace surfaces. The live MCP tool schemas (name/args/description) always reach you at call time — this file is the at-a-glance map of what each mode unlocks and when to reach for each.
 
-## Analysis mode — `analysis_workspace__*` (read-only, org-scoped)
+## Discover mode — `analysis_workspace__*` (read-only, org-scoped)
 
-> **Scope:** Analysis is for understanding data + one-off Python scripts + scheduled jobs (crons) — **never a web app.** Building any web/app surface (page, UI, dashboard, form, frontend, backend/API endpoint) is App Building → `start_app_building(session_id=<current>)`, not an inline native-tool build here.
+> **Scope:** Discover is for understanding data + one-off Python scripts + scheduled jobs (crons) — **never a web app.** Building any web/app surface (page, UI, dashboard, form, frontend, backend/API endpoint) is Build → `start_app_building(session_id=<current>)`, not an inline native-tool build here.
 
-**Plus ALL native Claude Code tools** (Read/Write/Edit/Bash/Grep/Glob/WebSearch/WebFetch) — available in analysis for your own reasoning, scripts, and local scratch notes, NOT for building a web app (they're blocked only in App Building / vibe-edit).
+**Plus ALL native Claude Code tools** (Read/Write/Edit/Bash/Grep/Glob/WebSearch/WebFetch) — available in Discover for your own reasoning, scripts, and local scratch notes, NOT for building a web app (they're blocked only in Build / vibe-edit).
 
 | Tool | What it's for |
 |---|---|
@@ -20,7 +20,7 @@
 | `grep_api_context_files` | Search the API docs the user uploaded — OpenAPI / Postman / integration notes. |
 | `manage_crons` | List / add / remove / trigger per-project scheduled jobs (crons). Scripts + crons are the kind of automation that belongs in Analysis. |
 
-## App Building mode — `coding_workspace__*` only (native tools blocked)
+## Build mode — `coding_workspace__*` only (native tools blocked)
 
 | Tool | Purpose |
 |---|---|

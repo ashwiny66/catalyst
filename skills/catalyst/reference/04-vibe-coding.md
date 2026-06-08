@@ -6,7 +6,7 @@
 
 After `complete_build` runs, the project's status flips to "completed" but the session is **not closed**. You can keep using `coding_workspace__*` tools to make changes. Every change continues to land in the same project history the wizard's ChatPane is reading. The running app updates live — typically the user just refreshes their preview tab and sees the change.
 
-The only practical difference between a fresh App Building handoff and vibe-editing:
+The only practical difference between a fresh Build handoff and vibe-editing:
 
 - In a fresh build, you start from a kickoff message that includes the full PRD + repo map.
 - In vibe-edit, you don't get a fresh kickoff. The user describes the change they want and you use the tools (`coding_workspace__get_repo_map`, `coding_workspace__get_prd`, `coding_workspace__read`) to figure out where it goes.
@@ -36,14 +36,14 @@ Every assistant turn during vibe-edit lands in the **same** project history as t
 - **Don't** call `send_message(message=<idea>)` with no `session_id` for an iteration. That spawns a new project. The old project is left frozen and the new one starts from scratch.
 - **Do** keep calling `coding_workspace__*` tools for any change in the current session.
 
-If the user wants a *new* project, that's the moment for `switch_project` (or `send_message` with no session_id).
+If the user wants a *new* project, that's the moment for `switch_mindspace` (or `send_message` with no session_id).
 
 ## When you reopen Claude Code on an existing project
 
 If the user's Claude Code session restarts (closed terminal, etc.):
 
 1. Call `current_session` — if it's still tracking the project, you're back in.
-2. If not, run `list_projects`, find the one they want, and call `send_message(message=<their next request>, session_id=<id>)`. The skill rebinds tools and gets you ready to keep iterating.
+2. If not, run `list_mindspaces`, find the one they want, and call `send_message(message=<their next request>, session_id=<id>)`. The skill rebinds tools and gets you ready to keep iterating.
 
 You don't need to call any other "rebind" or "resume" tool. `send_message` covers it.
 
