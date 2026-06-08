@@ -89,7 +89,6 @@ REDIRECTS = {
     "Bash":         "coding_workspace__bash",
     "Grep":         "coding_workspace__grep",
     "Glob":         "coding_workspace__find",
-    "Agent":        "coding_workspace__Agent",
     "WebFetch":     "coding_workspace__web_search",
     "WebSearch":    "coding_workspace__web_search",
     "NotebookEdit": "coding_workspace__edit",
@@ -104,6 +103,13 @@ ALLOW_EXACT = {
     "ToolSearch",
     "ExitPlanMode",
     "EnterPlanMode",
+    # The native Agent (Task) tool + plan mode — Claude's & Codex's own sub-tasking
+    # and planning. This is the sanctioned way for an agent to fan out / parallelize
+    # its work; creating a Mindspace SUBAGENT for that is forbidden (subagents are
+    # user-request-only). NOTE: a spawned native subagent runs under the parent's
+    # cc_session_id, so its OWN native FS/shell calls are still governed by this block
+    # while a build is active — it should drive the project via coding_workspace__*.
+    "Agent",
 }
 
 
