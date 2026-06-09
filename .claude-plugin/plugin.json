@@ -1,7 +1,7 @@
 {
   "name": "catalyst",
-  "version": "0.1.20",
-  "description": "Build apps via Catalyst from inside Claude Code",
+  "version": "0.1.21",
+  "description": "Your forward-deployed PM inside Claude Code — Discover, Spec, Build",
   "author": {
     "name": "Catalyst",
     "email": "dev@buildwithcatalyst.com"

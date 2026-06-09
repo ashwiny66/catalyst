@@ -10,7 +10,7 @@ When `send_message` lands in Build mode (or the moment after `confirm` flips the
 - `app_root` — the project's working directory; every `coding_workspace__*` path is relative to it.
 - `frontend_url` / `backend_url` — share with the user once you've made any visible change. They open this URL to see the running app.
 - `tools_bound` — the list of `coding_workspace__*` tools that are now operational.
-- `entry_kind` — `fresh_handoff` (just out of brainstorm), `interrupted_build` (the prior build was mid-flight), or `vibe_edit` (the app is shipping; user wants a tweak). Frame your first turn back to the user accordingly.
+- `entry_kind` — `fresh_handoff` (just out of spec), `interrupted_build` (the prior build was mid-flight), or `vibe_edit` (the app is shipping; user wants a tweak). Frame your first turn back to the user accordingly.
 
 The PRD and repo map are inlined in `kickoff_message`. Don't re-fetch them with `coding_workspace__get_prd` or `coding_workspace__get_repo_map` unless your context has been compacted — calling them when you already have the data is wasteful.
 
