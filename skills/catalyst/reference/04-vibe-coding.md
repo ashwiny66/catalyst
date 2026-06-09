@@ -22,7 +22,7 @@ You:
 1. `coding_workspace__get_repo_map` to find where the deliveries page lives.
 2. `coding_workspace__read` to inspect the relevant file(s).
 3. Decide: frontend-only change, or do we need a new endpoint too?
-4. If backend: `coding_workspace__get_existing_apis_summary` first (maybe an export endpoint already exists), or `coding_workspace__get_table_detail("deliveries")` for the columns to export.
+4. If backend: `coding_workspace__get_all_apis` first (maybe an export endpoint already exists), or `coding_workspace__get_table_detail("deliveries")` for the columns to export.
 5. `coding_workspace__write` / `coding_workspace__edit` to apply the change.
 6. Optionally `coding_workspace__bash` for a quick sanity check (`tsc --noEmit`, lint, smoke test).
 7. Tell the user: "Done — refresh your preview to see the new button."
@@ -31,21 +31,19 @@ The dev servers are already running and reload on file changes; you don't restar
 
 ## Don't break the persistence chain
 
-Every assistant turn during vibe-edit lands in the **same** project history as the original build. This means:
+Every assistant turn during vibe-edit lands in the **same** Mindspace history as the original build. This means:
 
-- **Don't** call `send_message(message=<idea>)` with no `session_id` for an iteration. That spawns a new project. The old project is left frozen and the new one starts from scratch.
-- **Do** keep calling `coding_workspace__*` tools for any change in the current session.
+- **Do** keep calling `coding_workspace__*` tools for any change — the session stays bound; the edits land in order.
+- The current Mindspace is the active one; a stage switch (e.g. back to `start_spec` to re-plan) continues it — it never forks.
 
-If the user wants a *new* project, that's the moment for `switch_mindspace` (or `send_message` with no session_id).
+If the user wants a genuinely *new* Mindspace, that's the moment for `switch_mindspace()` (clean slate), then `start_app_building`.
 
 ## When you reopen Claude Code on an existing project
 
 If the user's Claude Code session restarts (closed terminal, etc.):
 
-1. Call `current_session` — if it's still tracking the project, you're back in.
-2. If not, run `list_mindspaces`, find the one they want, and call `send_message(message=<their next request>, session_id=<id>)`. The skill rebinds tools and gets you ready to keep iterating.
-
-You don't need to call any other "rebind" or "resume" tool. `send_message` covers it.
+1. Call `current_session` — if it's still tracking the project, you're back in (`start_app_building` continues it; no id arg).
+2. If not, run `list_mindspaces`, find the one they want, and `switch_mindspace(target_session_id=<id>)` — that's the primitive that re-activates a specific Mindspace (the transitions have no `session_id`; only `switch_mindspace` points at a chosen one). It rebinds the workspace tools and you keep iterating.
 
 ## When to call `complete_build` vs `abandon_build` vs nothing
 

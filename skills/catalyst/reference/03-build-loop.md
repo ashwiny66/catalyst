@@ -1,10 +1,10 @@
 # Build mode — you're the engineer now
 
-> **Read this when:** `send_message` returned `mode: "coding"` (the internal value — it *means* Build), or you're driving an active Build session.
+> **Read this when:** `start_app_building` returned `mode: "coding"` (the internal value — it *means* Build), or you're driving an active Build session.
 
 ## What the Build handoff gives you
 
-When `send_message` lands in Build mode (or the moment after `confirm` flips the status), the response carries:
+When `start_app_building` enters Build mode, the response carries:
 
 - `kickoff_message` — a single string with the workspace path, tech stack summary, the full PRD, the repo map, and the build rules. **This IS your build instruction.** Treat it as your first user-turn brief.
 - `app_root` — the project's working directory; every `coding_workspace__*` path is relative to it.
@@ -18,11 +18,11 @@ The PRD and repo map are inlined in `kickoff_message`. Don't re-fetch them with 
 
 1. **Acknowledge the handoff.** Tell the user "Entering Build mode." once. Don't repeat it.
 2. **For data work, ask the database knowledge base first.**
-   - `coding_workspace__get_existing_tables_summary` lists every existing table with its purpose and relationships.
+   - `coding_workspace__get_all_db_tables` lists every existing table with its purpose and relationships (supports a `query` regex + paging).
    - `coding_workspace__get_table_detail(table_name)` gives exact column names. **Column names cannot be inferred** — call this before writing any code that touches columns.
    - `coding_workspace__run_select_query("SELECT ... LIMIT N")` runs a read-only `SELECT` against the user's live DB (mysql / postgres / redshift, via-cloud or direct). Use it to verify a table actually has rows, to confirm an enum's distinct values, or to sanity-check a query before committing code that depends on its shape. Validator-enforced rules: SELECT/WITH/EXPLAIN only, mandatory `LIMIT` clause, 50-row cap on output.
 3. **For external API integrations, ask the API knowledge base.**
-   - `coding_workspace__get_existing_apis_summary` shows known endpoints and auth context.
+   - `coding_workspace__get_all_apis` shows known endpoints and auth context (`coding_workspace__get_collection_detail` for one collection).
    - `coding_workspace__get_api_endpoint_detail(endpoints=[{method, path}, ...])` returns full request / response shapes for the endpoints you'll call.
 4. **For any multi-step task, plan in `coding_workspace__todo_write` AND surface the same plan to the user in chat.** The MCP tool's return string is generic ("Todos have been modified successfully…") and is not user-visible — so on every call, also print the list to the user as a short markdown checklist (e.g. `- [ ] Set up auth route` / `- [x] Wire login form`). One in-progress at a time. When the work is single-step or trivially obvious, skip the todo entirely. The persisted JSON lives in `.agent/todo.json` on the workspace and the wizard's UI reads it from there — your chat-side rendering is the *user-facing* mirror, not a duplicate.
 5. **Write code via `coding_workspace__write` (creates) and `coding_workspace__edit` (modifies).** All paths are relative to `app_root`.
@@ -38,7 +38,7 @@ Before emitting the completion JSON:
 
 - For frontend work, sanity-check with `coding_workspace__bash` (e.g., `tsc --noEmit` or whatever the stack supports).
 - For backend work, smoke-test the relevant endpoint with `coding_workspace__bash` and `curl`.
-- For end-to-end visual checks, you have `coding_workspace__playwright_run` / similar — use it on the user-flow you just built.
+- For end-to-end visual checks, use `coding_workspace__playwright_test` against the live URL (never localhost) on the user-flow you just built.
 
 If the user says "it looks broken" *after* completion, you're already in vibe-edit mode (see [04-vibe-coding.md](04-vibe-coding.md)). Don't re-call `complete_build` for fixes — just edit and tell them.
 
@@ -58,7 +58,7 @@ If the user asks "did that get saved?" the answer is always yes.
 
 | Symptom | What to do |
 |---|---|
-| `coding_workspace__*` returns "no active build session" | The session marker dropped. Call `current_session` to see what's tracked, then `send_message(message=<their request>, session_id=<id>)` to re-bind. |
+| `coding_workspace__*` returns "no active build session" / "no bound tools" | The session marker dropped (e.g. Catalyst restarted). Call `current_session` — if it still shows the session, `start_app_building` re-binds it (no id arg; it reads the sentinel). If it shows nothing, `list_mindspaces` → `switch_mindspace(target_session_id=<id>)` to re-activate that Mindspace. |
 | A `coding_workspace__bash` returns "fatal" after retries | Something broke between Catalyst and the workspace. Tell the user, then re-call the same tool — it will rebuild the connection automatically. If it fails twice, point them at the Cloud step in the app. |
 | A tool call hangs for >2 minutes | Move on. The skill stays alive; tell the user "that step's taking longer than usual — let me know if you want me to retry or skip it." |
 

@@ -483,7 +483,7 @@ def _maybe_update_local_sentinel(payload: Dict[str, Any]) -> None:
     # needs_input) keep the mismatch guard, since a stray sid there shouldn't
     # flip the tab.
     full_mode = (
-        mode if mode in ("coding", "vibe_code", "deep_analysis")
+        mode if mode in ("coding", "vibe_code", "spec", "deep_analysis")
         else ("coding" if payload.get("kickoff_message") else "")
     )
     is_full_entry = bool(sid and app_root and gen_stream_id and full_mode)
@@ -941,6 +941,36 @@ def _write_offset(transcript_path: str, offset: int) -> None:
         _PROCESSED_OFFSET_PATH.write_text(json.dumps(offsets))
     except Exception as exc:
         logger.warning("offset write failed: %s", exc)
+
+
+# Per-transcript "anchor" = the session_id the offset is currently anchored to.
+# Sync follows the session_id: the FIRST recordable fire that sees a session_id
+# different from this anchor (empty→set on entry, or a switch to a different
+# Mindspace) snaps the offset to EOF and re-anchors — so pre-session / other-
+# session lines never leak. Keyed per-transcript (NOT the volatile sentinel
+# session_id, which the enrich rewrites every fire), so the snap is robust even
+# when the exact entry tool fire lacks a transcript_path.
+_ANCHOR_PATH = Path.home() / ".claude" / "state" / "catalyst-event-sink-anchors.json"
+
+
+def _read_anchor(transcript_path: str) -> str:
+    try:
+        return (json.loads(_ANCHOR_PATH.read_text()) or {}).get(transcript_path, "")
+    except Exception:
+        return ""
+
+
+def _write_anchor(transcript_path: str, session_id: str) -> None:
+    try:
+        _ANCHOR_PATH.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            data = json.loads(_ANCHOR_PATH.read_text()) or {}
+        except Exception:
+            data = {}
+        data[transcript_path] = session_id
+        _ANCHOR_PATH.write_text(json.dumps(data))
+    except Exception as exc:
+        logger.warning("anchor write failed: %s", exc)
 
 
 def _latest_turn_text(path: str) -> tuple[str, str, list]:
@@ -1459,41 +1489,40 @@ def _run(ctx: _RunCtx, stream) -> int:
     # db_finalize / menu phases persist natively via the wizard's
     # LangGraph; the hook has nothing useful to record there.
     new_mode = (sentinel.get("mode") or "").strip()
-    # coding/vibe_code (build) + deep_analysis (research) are all Claude-Code-
-    # driven and stream to the project view via the hook. brainstorm/db_finalize/
-    # menu persist natively via the wizard's LangGraph — never recorded here.
-    if new_mode not in ("coding", "vibe_code", "deep_analysis"):
+    # deep_analysis (Discover) + spec (plan) + coding/vibe_code (build) are all
+    # Claude-Code-driven and stream to the project view via the hook. menu has
+    # no active work to record.
+    if new_mode not in ("coding", "vibe_code", "spec", "deep_analysis"):
         ctx.noop_reason = f"mode-not-recordable(mode={new_mode or 'unset'})"
         return 0
 
-    # First-time coding entry on this transcript: fast-forward the offset
-    # to the current EOF so pre-coding narration (menu banter, project
-    # selection, etc.) doesn't get scooped up by the first
-    # _latest_turn_text scan. Identified by the sentinel transition:
-    # either session_id flipped from empty → set, OR mode flipped into
-    # coding from anything else (menu, brainstorm, ...).
-    became_coding = (
-        prev_mode not in ("coding", "vibe_code", "deep_analysis")
-        or not prev_sid
-        or prev_sid != session_id
-    )
-    if became_coding:
-        transcript_path = event.get("transcript_path")
-        if transcript_path:
-            try:
-                eof = len(
-                    Path(transcript_path)
-                    .read_text(encoding="utf-8", errors="replace")
-                    .splitlines()
-                )
-                _write_offset(transcript_path, eof)
-                logger.info(
-                    "transcript offset fast-forwarded to %d on coding entry "
-                    "(session=%s, prev_mode=%s)",
-                    eof, session_id[:8], prev_mode or "unset",
-                )
-            except Exception as exc:
-                logger.warning("offset fast-forward failed: %s", exc)
+    # Sync follows the session_id (the simple rule): the FIRST recordable fire
+    # that sees a session_id different from this transcript's anchor — empty→set
+    # on entry, or a switch to a different Mindspace — snaps the offset to EOF
+    # and re-anchors, so pre-session narration (menu banter, project selection)
+    # and other-Mindspace lines are never scooped by the first _latest_turn_text
+    # scan. This is keyed on a PER-TRANSCRIPT anchor rather than the sentinel's
+    # prev_sid (which the enrich rewrites every fire), so the snap still fires if
+    # the exact entry tool fire lacked a transcript_path — whichever recordable
+    # fire first sees the new session does it. When the session_id is removed
+    # (back to menu) the missing-session-id gate above already stops sync.
+    transcript_path = event.get("transcript_path")
+    if transcript_path and _read_anchor(transcript_path) != session_id:
+        try:
+            eof = len(
+                Path(transcript_path)
+                .read_text(encoding="utf-8", errors="replace")
+                .splitlines()
+            )
+            _write_offset(transcript_path, eof)
+            _write_anchor(transcript_path, session_id)
+            logger.info(
+                "offset anchored to %d — session_id set/changed "
+                "(session=%s, prev_mode=%s)",
+                eof, session_id[:8], prev_mode or "unset",
+            )
+        except Exception as exc:
+            logger.warning("offset anchor failed: %s", exc)
 
     if ctx.hook == "PostToolUse":
         records = _translate_post_tool(event)

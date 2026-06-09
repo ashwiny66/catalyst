@@ -41,12 +41,12 @@ The skill is a thin layer over the Catalyst app. The skill doesn't handle setup.
 
 ## When the backend stops responding mid-build
 
-If `send_message` (or any other tool) comes back with a connection error, Catalyst is down on the user's machine. Nothing is lost.
+If a Catalyst tool comes back with a connection error, Catalyst is down on the user's machine. Nothing is lost — the conversation and project history persist.
 
 What to do:
 
 1. Tell the user: "Catalyst stopped responding — restart it with `./start.sh` and say 'continue' when it's back."
-2. When they say continue, call `send_message(message="", session_id=<same id>)`. The build resumes exactly where it paused. Every question and answer so far is remembered; you don't lose progress.
+2. When they say continue, re-enter the stage on the same Mindspace: `start_app_building` to resume a build (or `start_spec` to keep planning). The sentinel survives a backend restart, so the transition reads the active Mindspace itself (no id to pass) — it rebinds the workspace tools and you pick up where you paused. If `current_session` shows nothing (the marker was cleared), `list_mindspaces` → `switch_mindspace(target_session_id=<id>)` to re-activate it first.
 
 The user doesn't need to abandon, reset, or restart Claude Code.
 

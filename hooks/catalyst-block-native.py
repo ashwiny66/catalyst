@@ -113,6 +113,36 @@ ALLOW_EXACT = {
 }
 
 
+# Per-mode workspace-tool deny-sets — mirror the FDE ModeController's DENIED.
+# The agent does all stages on the ONE coding_workspace__* surface; the mode
+# narrows it:
+#   deep_analysis (Discover) → investigate: no write/edit/playwright/save_prd.
+#       `coding_workspace__bash` IS open here (intentionally diverges from FDE's
+#       DENIED["deep_analysis"]) so the agent can store its working plan IN the
+#       Mindspace workspace (persisted on the EC2), not on the laptop. Native
+#       Bash is blocked → routed to coding_workspace__bash (see Case 3 below).
+#   spec          (Spec)     → shape the plan: no build actions; save_prd allowed.
+#   coding/vibe   (Build)    → nothing denied (full surface).
+# These open/close as the agent calls start_analysis / start_spec /
+# start_app_building. (Agent + Enter/ExitPlanMode are native ALLOW_EXACT — never
+# touched by this gate, so they stay available in every mode incl. Discover.)
+_CODING_WS_MARKER = "coding_workspace__"
+_DENIED_BY_MODE = {
+    "deep_analysis": {"write", "edit", "playwright_test", "save_prd"},
+    "spec": {"write", "edit", "bash", "playwright_test"},
+}
+
+
+def _is_mode_denied_tool(mode: str, tool_name: str) -> bool:
+    """True if ``tool_name`` is a ``coding_workspace__*`` tool denied in ``mode``
+    (per ``_DENIED_BY_MODE``, mirroring FDE's DENIED)."""
+    denied = _DENIED_BY_MODE.get(mode)
+    if not denied or _CODING_WS_MARKER not in tool_name:
+        return False
+    bare = tool_name.rsplit(_CODING_WS_MARKER, 1)[-1]
+    return bare in denied
+
+
 def _read_sentinel() -> Dict[str, Any]:
     if not SENTINEL_PATH.exists():
         return {}
@@ -150,13 +180,15 @@ def _bare_catalyst_tool(tool_name: str) -> str:
 
 
 def _is_allowed_for_owner(tool_name: str) -> bool:
+    """Strict allow-list while a Catalyst session is active — mirrors FDE, whose
+    agent only ever has the Catalyst surface. ONLY catalyst-mcp tools + the
+    native plumbing in ALLOW_EXACT (Agent, plan mode, TodoWrite, …) pass here.
+    External MCP servers (loadshare, Slack, Notion, …) are NOT allowed — they're
+    handled (denied) in Case 3. (Native Bash in Discover is also handled there.)
+    """
     if tool_name in ALLOW_EXACT:
         return True
     if _is_catalyst_mcp_tool(tool_name):
-        return True
-    # Allow other MCP servers (Slack, Notion, etc.) — we only guard
-    # the local FS/shell surface for the owning tab.
-    if tool_name.startswith("mcp__"):
         return True
     return False
 
@@ -274,22 +306,54 @@ def main() -> int:
 
     # ── Case 3: this is the owning tab ──────────────────────────────────
     if owner_cc_id == cc_session_id:
+        mode = sentinel.get("mode", "menu")
+        # Fix #2 — per-mode tool whitelisting (the plugin's gate, mirroring the
+        # FDE ModeController's DENIED). Discover (read-only) and Spec (plan, no
+        # build) narrow the shared coding_workspace surface; Build denies nothing.
+        # Checked BEFORE _is_allowed_for_owner — but it only matches
+        # coding_workspace__* tools, so native Agent/plan (ALLOW_EXACT) and other
+        # MCPs fall through and stay allowed in every mode.
+        if _is_mode_denied_tool(mode, tool_name):
+            _debug_log(f"  → DENY {tool_name} (mode={mode} denied)")
+            if mode == "deep_analysis":
+                return _emit_deny(
+                    f"`{tool_name}` is blocked in Discover — this is read-only "
+                    "investigation, you change nothing here. Dig with "
+                    "run_select_query / run_python / the knowledge base. When the "
+                    "work turns to making something, call `start_spec` (to shape a "
+                    "plan) or `start_app_building` (to build)."
+                )
+            return _emit_deny(
+                f"`{tool_name}` is a Build tool — you're in Spec, where you shape "
+                "the plan, not the app. Write the PRD with `save_prd`, show it to "
+                "the user, and on a clear yes call `start_app_building` to build — "
+                "then write/edit/bash/playwright open up."
+            )
         if _is_allowed_for_owner(tool_name):
             return 0
-        # Deep Analysis is org-level research, NOT an app build pinned to a
-        # remote workspace — there is no wrong-filesystem hazard to guard
-        # against, so ALL native tools (Read/Write/Edit/Bash/Grep/Glob/
-        # WebSearch/WebFetch/Agent) are allowed here. Every OTHER live mode
-        # (menu/brainstorm/coding/vibe_code) keeps blocking native tools
-        # exactly as before — this is a strict additive carve-out.
-        if sentinel.get("mode") == "deep_analysis":
-            _debug_log(f"  → ALLOW native {tool_name} (mode=deep_analysis)")
-            return 0
-        # Native tool — refuse with redirect to the bare tool name. The
-        # agent already has the actual namespaced catalyst tools loaded
-        # (whatever prefix CC chose) and can pick the right one.
+        # NOTE: native Bash is NO LONGER carved out in Discover. The EC2 shell
+        # `coding_workspace__bash` is open in deep_analysis instead (see
+        # _DENIED_BY_MODE above) so the agent's plan/scratch persists IN the
+        # Mindspace workspace rather than on the laptop. So native Bash falls
+        # through to the redirect below → coding_workspace__bash, in every mode.
+        # (Agent + Enter/ExitPlanMode stay always-allowed via ALLOW_EXACT.)
+        # External MCP server (any mcp__* that isn't catalyst-mcp — those passed
+        # _is_allowed_for_owner above). BLACKLISTED while a Catalyst session is
+        # active: Catalyst is a strict allow-list (Catalyst tools + native
+        # plumbing only), mirroring FDE whose agent only has the Catalyst surface.
+        if tool_name.startswith("mcp__"):
+            _debug_log(f"  → DENY external MCP {tool_name} (Catalyst allow-list)")
+            return _emit_deny(
+                f"`{tool_name}` is an external MCP — blocked while a Catalyst "
+                "session is active. Do the work with Catalyst's own tools: "
+                "run_select_query / run_python / the knowledge base for data, the "
+                "coding_workspace tools for builds. To use other MCPs, end the "
+                "Catalyst session first (abandon_build / current_session)."
+            )
+        # Native FS/shell tool — refuse with a redirect to the matching
+        # coding_workspace tool. Spec + Build both protect the project's
+        # workspace (EC2 / app_root); there is no allow-all-native mode.
         redirect_bare = REDIRECTS.get(tool_name) or "coding_workspace__*"
-        mode = sentinel.get("mode", "menu")
         reason = (
             f"Native `{tool_name}` is blocked while a Catalyst session is "
             f"active (mode={mode}). The build's workspace lives on EC2 (or "
