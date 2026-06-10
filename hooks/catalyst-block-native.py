@@ -24,6 +24,18 @@ Two responsibilities, in order:
    ALLOWED — that mode is org-level research with no remote app workspace to
    protect, so the wrong-filesystem hazard doesn't apply.
 
+4. **Session-id injection (the routing source of truth).** The Catalyst MCP is
+   HTTP-remote and HOLDS NO active-session state — on a host shared by every
+   plugin user, a server-side "active session" would be the last writer's, not
+   yours (this is what once renamed a Mindspace nobody picked). So this hook
+   stamps the CURRENT ``session_id`` — from the LOCAL per-machine sentinel —
+   into EVERY catalyst-mcp tool call that targets a Mindspace, via
+   ``hookSpecificOutput.updatedInput``. The server routes purely on that arg.
+   Empty local session_id → the field is omitted → the server mints a fresh
+   Mindspace (only after a ``switch_mindspace`` clean-slate). The agent never
+   chooses the Mindspace; ``switch_mindspace`` (its own ``target_session_id``,
+   user-confirmed) is the only way to change which one is active.
+
 Output contract — Claude Code's CURRENT PreToolUse hook spec (changed mid-2026
 from the older ``{"decision":"block"}`` + ``exit 2`` form, which CC now
 ignores silently). Required shape:
@@ -132,6 +144,44 @@ _DENIED_BY_MODE = {
     "spec": {"write", "edit", "bash", "playwright_test"},
 }
 
+# Session routing is CLIENT-SIDE. The remote MCP server holds NO active-session
+# state (on a shared host that would be another user's), so this hook stamps the
+# CURRENT session_id — from the LOCAL sentinel — into EVERY catalyst-mcp tool call
+# that targets a Mindspace. The server then routes purely on that arg. Empty local
+# session_id → leave it off so the server mints a fresh Mindspace (only after a
+# switch_mindspace clean-slate). The agent NEVER picks the Mindspace; only
+# switch_mindspace changes which one is active, through its own user-confirm gate
+# (and its own target_session_id arg, which we do NOT overwrite).
+#
+# Carve-outs from the general "inject current session" rule:
+#   _NO_SESSION_BARE — tools with no Mindspace target (account / listing).
+#       Injecting an unused session_id is harmless but we skip them to keep
+#       payloads clean.
+#   switch_mindspace — NOT carved out: it gets session_id (= current) injected
+#       like everything else, which the server reads as the Mindspace to leave;
+#       its target_session_id (the agent's pick of where to GO) is a different
+#       arg that _inject_current_session never touches, so it's preserved.
+#   end / abandon_build / logout — in _LOCAL_WIPE_BARE, handled in Case 0 (the
+#       local wipe). end + abandon still get session_id injected THERE so the
+#       server abandons the caller's build (handle_abandon_build reads args).
+_NO_SESSION_BARE = {
+    "health_check", "ensure_auth", "logout", "list_mindspaces", "list_projects",
+}
+
+
+def _inject_current_session(event: Dict[str, Any], sentinel: Dict[str, Any]) -> Dict[str, Any]:
+    """Return the tool_input with the CURRENT session_id (from the LOCAL sentinel)
+    stamped in, overwriting any value the agent supplied. Empty sentinel session
+    → strip session_id so the server mints a fresh Mindspace. This is the single
+    client-side source of routing truth — the remote MCP holds no session state."""
+    cur_sid = (sentinel.get("session_id") or "").strip()
+    tool_input = dict(event.get("tool_input") or {})
+    if cur_sid:
+        tool_input["session_id"] = cur_sid
+    else:
+        tool_input.pop("session_id", None)
+    return tool_input
+
 
 def _is_mode_denied_tool(mode: str, tool_name: str) -> bool:
     """True if ``tool_name`` is a ``coding_workspace__*`` tool denied in ``mode``
@@ -216,6 +266,21 @@ def _emit_deny(reason: str) -> int:
     return 0
 
 
+def _emit_allow_updated_input(updated_input: Dict[str, Any]) -> int:
+    """Allow the tool call but REPLACE its input args. Used to stamp the current
+    session_id (from the local sentinel) into the stage transitions, so the remote
+    MCP server gets the caller's active Mindspace without reading any server-side
+    sentinel. Exit 0; CC parses ``updatedInput`` (PreToolUse contract)."""
+    print(json.dumps({
+        "hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
+            "permissionDecision": "allow",
+            "updatedInput": updated_input,
+        }
+    }))
+    return 0
+
+
 def _debug_log(line: str) -> None:
     """Diagnostic — every hook invocation appends a single line to
     ~/.claude/state/catalyst-hook-debug.log. Best-effort, never raise."""
@@ -260,6 +325,11 @@ def main() -> int:
     # Local effect is identical: tab is freed for the next sign-in.
     bare_name = _bare_catalyst_tool(tool_name) if is_cat else ""
     if is_cat and bare_name in _LOCAL_WIPE_BARE:
+        # Capture the current session_id BEFORE wiping the sentinel — end /
+        # abandon_build need it injected so the (stateless) server abandons the
+        # CALLER's build (handle_abandon_build reads args.session_id; it no longer
+        # reads a server-side sentinel).
+        wipe_sid = (sentinel.get("session_id") or "").strip()
         events_jwt_path = Path.home() / ".claude" / "state" / "catalyst-events-jwt.json"
         try:
             SENTINEL_PATH.unlink(missing_ok=True)
@@ -271,7 +341,18 @@ def main() -> int:
             _debug_log(f"  → DELETED events_jwt ({bare_name} by cc={cc_session_id[:8]})")
         except Exception as exc:
             _debug_log(f"  → events_jwt unlink failed: {exc}")
-        return 0  # allow the tool call to proceed
+        # end / abandon_build → stamp the caller's session_id so the server
+        # abandons the right build. logout is non-destructive server-side; no
+        # session needed → plain allow.
+        if bare_name in ("end", "abandon_build"):
+            tool_input = dict(event.get("tool_input") or {})
+            if wipe_sid:
+                tool_input["session_id"] = wipe_sid
+            else:
+                tool_input.pop("session_id", None)
+            _debug_log(f"  → ALLOW {bare_name} + inject session_id={wipe_sid[:8] or '(none)'}")
+            return _emit_allow_updated_input(tool_input)
+        return 0  # logout — allow the tool call to proceed
 
     # ── Case 1: no sentinel yet ─────────────────────────────────────────
     # Tab registration happens on the first ``mcp__catalyst-mcp__*`` call.
@@ -295,10 +376,17 @@ def main() -> int:
 
     # ── Case 2: sentinel exists but owner not yet stamped ───────────────
     # Edge case — shouldn't happen under the new flow, but defensive.
-    # Stamp this tab as owner if it's the first mcp call.
+    # Claim it as a FRESH session for this tab: stamp the owner AND reset the
+    # project fields. A new owner must NOT inherit a stale session_id from an
+    # orphaned sentinel — that's exactly how a transition would continue/rename
+    # a Mindspace the user never picked. Treat it like a clean Case-1 claim.
     if not owner_cc_id:
         if cc_session_id and _is_catalyst_mcp_tool(tool_name):
             sentinel["cc_session_id"] = cc_session_id
+            sentinel["session_id"] = None
+            sentinel["app_root"] = ""
+            sentinel["gen_stream_id"] = ""
+            sentinel["mode"] = "menu"
             _write_sentinel(sentinel)
             owner_cc_id = cc_session_id
         else:
@@ -329,6 +417,23 @@ def main() -> int:
                 "the user, and on a clear yes call `start_app_building` to build — "
                 "then write/edit/bash/playwright open up."
             )
+        # ── Inject the CURRENT session into EVERY catalyst tool call ────────
+        # The remote MCP holds NO active-session state (shared host), so this is
+        # the sole source of routing truth: stamp session_id from the LOCAL
+        # sentinel (overwriting any value the agent supplied) into every
+        # catalyst-mcp tool that targets a Mindspace — coding_workspace__*,
+        # transitions, switch_mindspace, current_session, record_turn, recall_*,
+        # complete_build, … Empty sentinel session_id → drop it → server mints a
+        # fresh Mindspace (only after a switch_mindspace clean-slate). The agent
+        # never picks the Mindspace; switch_mindspace is the only change, gated.
+        # Carve-outs: no-session tools (account/listing) are left untouched and
+        # just allowed; switch_mindspace's target_session_id is the agent's pick
+        # and is preserved — we add session_id (= current) alongside it.
+        if is_cat and bare_name not in _NO_SESSION_BARE:
+            tool_input = _inject_current_session(event, sentinel)
+            stamped = tool_input.get("session_id", "")
+            _debug_log(f"  → ALLOW {bare_name} + inject session_id={stamped[:8] or '(fresh)'}")
+            return _emit_allow_updated_input(tool_input)
         if _is_allowed_for_owner(tool_name):
             return 0
         # NOTE: native Bash is NO LONGER carved out in Discover. The EC2 shell

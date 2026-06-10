@@ -46,7 +46,7 @@ If a Catalyst tool comes back with a connection error, Catalyst is down on the u
 What to do:
 
 1. Tell the user: "Catalyst stopped responding — restart it with `./start.sh` and say 'continue' when it's back."
-2. When they say continue, re-enter the stage on the same Mindspace: `start_app_building` to resume a build (or `start_spec` to keep planning). The sentinel survives a backend restart, so the transition reads the active Mindspace itself (no id to pass) — it rebinds the workspace tools and you pick up where you paused. If `current_session` shows nothing (the marker was cleared), `list_mindspaces` → `switch_mindspace(target_session_id=<id>)` to re-activate it first.
+2. When they say continue: a backend restart doesn't clear your local marker, so usually `start_app_building` (or `start_spec`) just continues your current Mindspace — the plugin still knows which one. If the marker was cleared (`current_session` shows nothing), `list_mindspaces` → `switch_mindspace(target_session_id=<id>)` to re-activate it, then the next transition continues it.
 
 The user doesn't need to abandon, reset, or restart Claude Code.
 

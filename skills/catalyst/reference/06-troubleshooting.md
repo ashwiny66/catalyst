@@ -6,7 +6,7 @@
 |---|---|
 | `health_check` returns `backend_up: false` | Tell the user: "Catalyst isn't running on your machine. Start it with `./start.sh` in the catalyst-builder folder, then say 'continue'." |
 | Native tools (Read / Edit / Bash / Write / Grep / etc.) are blocked with "use coding_workspace__*" | Expected — a Build session is active. Use the redirect target the hook names. If the user genuinely needs native tools (they're editing local config, not the project), call `abandon_build` first to clear the session marker. |
-| `coding_workspace__*` returns "no active build session" / "no bound tools" | The session marker dropped (e.g. Catalyst restarted). Call `current_session` — if it returns a session, `start_app_building` re-binds it (no id arg; reads the sentinel). If not, `list_mindspaces` → `switch_mindspace(target_session_id=<picked>)` to re-activate that Mindspace. |
+| `coding_workspace__*` returns "no active build session" / "no bound tools" | The session marker dropped (e.g. Catalyst restarted). `current_session` — if it still shows the Mindspace, `start_app_building` re-binds your current one. If not, `list_mindspaces` → `switch_mindspace(target_session_id=<picked>)` to re-activate it, then `start_app_building` / `start_spec` continue it. |
 | `complete_build` errors finalizing (migrations / launch) | The agent's migrations or `start.sh` failed. Read the error, check `health_check` (usually the DB connection); fix the cause and re-run `complete_build` (it's idempotent). |
 | An external MCP (e.g. a Redshift/Slack/Notion MCP) is blocked with "external MCP — blocked while a Catalyst session is active" | Expected — Catalyst is a strict allow-list. Do the work with the Catalyst tools (`run_select_query`/`run_python`/KB, or `coding_workspace__*`). Only `abandon_build` to use other MCPs. |
 | A `coding_workspace__bash` returns "fatal" / "unreachable" after retries | Connection to the project workspace dropped. Re-call the same tool — most of the time it rebuilds the connection automatically. If it fails twice, point the user at the Cloud step in the app. |
@@ -29,6 +29,6 @@ Run `health_check` and `current_session` first.
 
 - If `current_session` shows an active build (`mode: coding`), the build is still in flight; the issue is probably a stalled tool call. Tell them what you were doing and offer to retry or switch direction.
 - If it shows `mode: vibe_code`, the initial build completed; the issue is in something you just edited. Read the most recent few turns to remember what you tried, then ask: "I just changed X — is that the part that's broken, or something earlier?"
-- If `current_session` returns `{"active": false}`, no build is in progress. Run `list_mindspaces`, see which Mindspace the user means, then `switch_mindspace(target_session_id=<picked>)` to re-activate it (the transitions have no `session_id`; `switch_mindspace` is what targets a specific Mindspace). Once active, `start_app_building` / `start_spec` continue it.
+- If `current_session` returns `{"active": false}`, no build is in progress. Run `list_mindspaces`, see which Mindspace the user means, then `switch_mindspace(target_session_id=<picked>)` to re-activate it — once active, `start_app_building` / `start_spec` continue it.
 
 Don't apologize generically. Confirm the state, name what you last did, and offer a concrete next step.

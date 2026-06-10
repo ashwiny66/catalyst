@@ -58,7 +58,7 @@ If the user asks "did that get saved?" the answer is always yes.
 
 | Symptom | What to do |
 |---|---|
-| `coding_workspace__*` returns "no active build session" / "no bound tools" | The session marker dropped (e.g. Catalyst restarted). Call `current_session` — if it still shows the session, `start_app_building` re-binds it (no id arg; it reads the sentinel). If it shows nothing, `list_mindspaces` → `switch_mindspace(target_session_id=<id>)` to re-activate that Mindspace. |
+| `coding_workspace__*` returns "no active build session" / "no bound tools" | The session marker dropped (e.g. Catalyst restarted). `current_session` — if it still shows the Mindspace, `start_app_building` re-binds your current one. If not, `list_mindspaces` → `switch_mindspace(target_session_id=<id>)` to re-activate that Mindspace, then continue. |
 | A `coding_workspace__bash` returns "fatal" after retries | Something broke between Catalyst and the workspace. Tell the user, then re-call the same tool — it will rebuild the connection automatically. If it fails twice, point them at the Cloud step in the app. |
 | A tool call hangs for >2 minutes | Move on. The skill stays alive; tell the user "that step's taking longer than usual — let me know if you want me to retry or skip it." |
 
