@@ -236,18 +236,16 @@ def _read_events_jwt() -> Optional[Dict[str, Any]]:
 def _write_events_jwt(
     events_jwt: str,
     exp_iso: str,
-    session_id: str,
-    gen_stream_id: str,
 ) -> bool:
-    """Write events_jwt to disk with chmod 600. Atomic via os.replace.
-    Returns True on success."""
+    """Write the IDENTITY-only events_jwt to disk with chmod 600. Atomic via
+    os.replace. The token is no longer session-bound — which session a turn
+    belongs to travels in the record POST's URL, not the token — so we store
+    only the token + its exp. Returns True on success."""
     try:
         EVENTS_JWT_PATH.parent.mkdir(parents=True, exist_ok=True)
         record = {
             "events_jwt": events_jwt,
             "exp": exp_iso,
-            "session_id": session_id,
-            "gen_stream_id": gen_stream_id,
             "issued_at": _now_iso(),
         }
         tmp = EVENTS_JWT_PATH.with_suffix(".json.tmp")
@@ -562,46 +560,20 @@ def _maybe_clear_local_state(payload: Dict[str, Any]) -> None:
 
 
 def _maybe_persist_events_jwt(payload: Dict[str, Any]) -> None:
-    """When a coding-entry response carries an events_jwt, persist it
-    alongside the sentinel. Called from `_enrich_sentinel_from_response`
-    on every PostToolUse for a catalyst-mcp tool.
+    """When ANY catalyst-mcp response carries an events_jwt, persist it. Called
+    from `_enrich_sentinel_from_response` on every PostToolUse for a catalyst tool.
 
-    Coding-entry responses (start_coding, enter_coding_mode) include
-    ``events_jwt`` + ``events_jwt_exp`` in the payload. Brainstorm /
-    db-finalize / menu responses don't carry these fields — silent no-op.
-
-    Consistency check: the events_jwt's session_id MUST match the active
-    sentinel's session_id. Mismatch = stale response (cross-tab race or
-    re-delivery) — refuse to overwrite the file.
+    The events_jwt is now IDENTITY-only and is returned by ``ensure_auth`` and
+    ``health_check`` (which run on every activation AND reauth), as well as the
+    build-entry transitions. So this persists on auth/reauth — no session binding,
+    no cross-check needed. Responses without the field → silent no-op.
     """
     token = (payload.get("events_jwt") or "").strip()
     if not token:
         return
     exp = (payload.get("events_jwt_exp") or "").strip()
-    sid = (payload.get("session_id") or "").strip()
-    gen_stream_id = (payload.get("gen_stream_id") or "").strip()
-    if not sid or not gen_stream_id:
-        logger.warning(
-            "events_jwt present but session_id/gen_stream_id missing in payload — refusing to persist"
-        )
-        return
-
-    # Cross-check against the just-written sentinel (which _maybe_update_local_sentinel
-    # called immediately before us, so it's freshly populated).
-    sentinel = _read_sentinel() or {}
-    sentinel_sid = (sentinel.get("session_id") or "").strip()
-    if sentinel_sid and sentinel_sid != sid:
-        logger.warning(
-            "events_jwt session_id mismatch: sentinel=%s response=%s — refusing to persist",
-            sentinel_sid[:8], sid[:8],
-        )
-        return
-
-    if _write_events_jwt(token, exp, sid, gen_stream_id):
-        logger.info(
-            "events_jwt persisted: session=%s exp=%s",
-            sid[:8], exp,
-        )
+    if _write_events_jwt(token, exp):
+        logger.info("events_jwt persisted (identity-only) exp=%s", exp or "(none)")
 
 
 def _enrich_sentinel_from_response(tool_name: str, response: Any) -> None:
