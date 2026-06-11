@@ -1232,42 +1232,32 @@ def _post_turn(
     mode (via start_coding / enter_coding_mode responses).
 
     Silent no-op when:
-      - events_jwt file is missing (we're not in coding mode — brainstorm/
-        db phases persist natively via the wizard's LangGraph; hook has
-        nothing useful to record),
-      - file's session_id doesn't match the active session_id (stale JWT
-        from a previous build).
+      - events_jwt file is missing (we're not in a recordable mode; the hook
+        has nothing useful to record).
+
+    The events_jwt is now IDENTITY-only (org+user) — NOT session-bound. So there
+    is no file session_id to require or cross-check; which session a turn belongs
+    to is the path ``session_id`` (from the local sentinel), and the server
+    enforces that this identity OWNS that session. We only need a present token.
 
     On 401 (events_jwt rotated server-side, or natural exp): logs and
-    drops the record. Next coding-mode entry will mint a fresh JWT.
+    drops the record. The next ensure_auth/health_check refreshes the JWT.
 
     When ``ctx`` is supplied, records the per-call HTTP code + duration
     onto it for the final summary line.
     """
     creds = _read_events_jwt()
     if not creds:
-        # No events_jwt → not in coding mode → no-op.
+        # No events_jwt → nothing to authenticate with → no-op.
         if ctx is not None:
             ctx.has_events_jwt = "no"
         return False
 
     jwt_token = (creds.get("events_jwt") or "").strip()
-    file_sid = (creds.get("session_id") or "").strip()
-    if not jwt_token or not file_sid:
-        _log_warn(ctx, "events_jwt file present but malformed: %r", creds)
+    if not jwt_token:
+        _log_warn(ctx, "events_jwt file present but missing token: %r", creds)
         if ctx is not None:
             ctx.has_events_jwt = "malformed"
-        return False
-
-    # Cross-check: the events_jwt is bound to one specific session_id.
-    if file_sid != session_id:
-        _log_warn(
-            ctx,
-            "events_jwt session mismatch: file=%s record=%s — skipping POST",
-            file_sid[:8], session_id[:8],
-        )
-        if ctx is not None:
-            ctx.has_events_jwt = "mismatch"
         return False
 
     # Defense-in-depth exp check.
@@ -1583,21 +1573,12 @@ def _post_auto_complete(
         return False
 
     jwt_token = (creds.get("events_jwt") or "").strip()
-    file_sid = (creds.get("session_id") or "").strip()
-    if not jwt_token or not file_sid:
-        _log_warn(ctx, "events_jwt file present but malformed: %r", creds)
+    if not jwt_token:
+        # Identity-only events_jwt — no session_id in the file to require/match;
+        # the server enforces that this identity owns the path session_id.
+        _log_warn(ctx, "events_jwt file present but missing token: %r", creds)
         if ctx is not None:
             ctx.has_events_jwt = "malformed"
-        return False
-
-    if file_sid != session_id:
-        _log_warn(
-            ctx,
-            "events_jwt session mismatch for auto-complete: file=%s path=%s",
-            file_sid[:8], session_id[:8],
-        )
-        if ctx is not None:
-            ctx.has_events_jwt = "mismatch"
         return False
 
     if ctx is not None:
