@@ -147,11 +147,14 @@ _DENIED_BY_MODE = {
 # Session routing is CLIENT-SIDE. The remote MCP server holds NO active-session
 # state (on a shared host that would be another user's), so this hook stamps the
 # CURRENT session_id — from the LOCAL sentinel — into EVERY catalyst-mcp tool call
-# that targets a Mindspace. The server then routes purely on that arg. Empty local
-# session_id → leave it off so the server mints a fresh Mindspace (only after a
-# switch_mindspace clean-slate). The agent NEVER picks the Mindspace; only
-# switch_mindspace changes which one is active, through its own user-confirm gate
-# (and its own target_session_id arg, which we do NOT overwrite).
+# that targets a Mindspace. The server then routes purely on that arg. When the
+# sentinel HAS a session it always wins (overwrites the agent's value). When the
+# sentinel is EMPTY, only the stage TRANSITIONS may fall back to an agent-supplied
+# session_id — that's the legitimate "resume the Mindspace I just found in
+# list_mindspaces" path; without it, an end→resume would silently FORK a new
+# Mindspace (the v0.1.23 regression this guards against). Workspace tools never
+# resurrect from an agent value. switch_mindspace's target_session_id (where to GO)
+# is a separate arg we never overwrite.
 #
 # Carve-outs from the general "inject current session" rule:
 #   _NO_SESSION_BARE — tools with no Mindspace target (account / listing).
@@ -168,14 +171,40 @@ _NO_SESSION_BARE = {
     "health_check", "ensure_auth", "logout", "list_mindspaces", "list_projects",
 }
 
+# The stage-transition / enter verbs. These are the RESUME-or-enter calls — the
+# one place the agent may legitimately name a Mindspace to (re)enter (e.g. resume
+# an abandoned one it found via list_mindspaces). So for these ONLY, when the
+# sentinel has no active session, we fall back to the agent-supplied session_id
+# instead of stripping it (which would silently fork a new Mindspace). When the
+# sentinel DOES have a session, it still wins (continue the current one). Plain
+# workspace tools are NOT in here: they must always follow the active sentinel and
+# never resurrect a session from an agent value.
+_TRANSITION_BARE = {"start_analysis", "start_spec", "start_app_building", "start_coding"}
 
-def _inject_current_session(event: Dict[str, Any], sentinel: Dict[str, Any]) -> Dict[str, Any]:
-    """Return the tool_input with the CURRENT session_id (from the LOCAL sentinel)
-    stamped in, overwriting any value the agent supplied. Empty sentinel session
-    → strip session_id so the server mints a fresh Mindspace. This is the single
-    client-side source of routing truth — the remote MCP holds no session state."""
+
+def _inject_current_session(
+    event: Dict[str, Any], sentinel: Dict[str, Any], *, allow_agent_fallback: bool = False
+) -> Dict[str, Any]:
+    """Return the tool_input with the session_id the call should route to.
+
+    Routing truth is the LOCAL sentinel (the remote MCP holds no session state):
+      - sentinel HAS a session_id → use it, overwriting whatever the agent sent
+        (active session wins — the multi-tenant safety guarantee).
+      - sentinel EMPTY:
+          * allow_agent_fallback (transitions only) → keep the agent's session_id
+            if it supplied one (resume that Mindspace); else omit → server mints
+            fresh.
+          * otherwise → strip session_id (server mints fresh / errors).
+    """
     cur_sid = (sentinel.get("session_id") or "").strip()
     tool_input = dict(event.get("tool_input") or {})
+    if not cur_sid and allow_agent_fallback:
+        agent_sid = (tool_input.get("session_id") or "").strip()
+        if agent_sid:
+            tool_input["session_id"] = agent_sid   # resume the agent-named Mindspace
+        else:
+            tool_input.pop("session_id", None)      # nothing to resume → fresh
+        return tool_input
     if cur_sid:
         tool_input["session_id"] = cur_sid
     else:
@@ -430,9 +459,18 @@ def main() -> int:
         # just allowed; switch_mindspace's target_session_id is the agent's pick
         # and is preserved — we add session_id (= current) alongside it.
         if is_cat and bare_name not in _NO_SESSION_BARE:
-            tool_input = _inject_current_session(event, sentinel)
+            # Transitions may resume an agent-named Mindspace when the sentinel
+            # is empty (post-end / fresh tab); workspace tools always follow the
+            # active sentinel. See _inject_current_session / _TRANSITION_BARE.
+            _is_transition = bare_name in _TRANSITION_BARE
+            tool_input = _inject_current_session(
+                event, sentinel, allow_agent_fallback=_is_transition,
+            )
             stamped = tool_input.get("session_id", "")
-            _debug_log(f"  → ALLOW {bare_name} + inject session_id={stamped[:8] or '(fresh)'}")
+            _src = "sentinel" if (sentinel.get("session_id") or "").strip() else (
+                "agent-resume" if (_is_transition and stamped) else "fresh"
+            )
+            _debug_log(f"  → ALLOW {bare_name} + inject session_id={stamped[:8] or '(fresh)'} [{_src}]")
             return _emit_allow_updated_input(tool_input)
         if _is_allowed_for_owner(tool_name):
             return 0
