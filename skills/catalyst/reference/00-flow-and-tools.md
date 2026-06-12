@@ -33,8 +33,8 @@ All three stages run on the ONE `coding_workspace__*` surface; the mode narrows 
 | `switch_mindspace(target_session_id?, confirm_clear_current?)` | **Non-destructive** pause/resume or clean slate — the primitive for "switch" / "step away" / "build new". **Never call on your own judgment — switching is the user's call.** Whenever a session is active it returns `needs_confirm_clear_current` first: relay it to the user (what they're leaving, where you're going; for a Spec session also warn it can rewind a question or two), then re-call with `confirm_clear_current=true` only on a clear yes. |
 | `abandon_build(reason?)` (alias `end`) | Destructive — wipes local session state + marks the row abandoned. Works from any tab. Resurrectable. Only on an explicit "end / abandon / kill it." |
 | `complete_build(summary)` | Finalize a build after the completion JSON — runs migrations, boots the dev servers, returns the URLs. Idempotent (a Stop hook also fires it as a safety net). |
-| `mindspace_skill(mode)` | THIS Mindspace's durable skill (how the area works) — router + references. Read on entry; write a reference as you learn. (Bound in Discover + Build.) |
-| `mindspace_memory(mode)` | THIS Mindspace's living memory (facts that proved true) — index + facts. Recall on entry; save the moment you learn. (Bound in Discover + Build.) |
+| `mindspace_skill(mode)` | THIS Mindspace's durable skill (how the area works) — a detailed core doc + references. Read on entry; `write_skill` to grow the core doc, write a reference for depth, as you learn. (Bound in Discover + Build.) |
+| `mindspace_memory(mode)` | THIS Mindspace's living memory — discrete facts you'd look up (not understanding; that's the skill). Recall on entry; save the moment you learn. (Bound in Discover + Build.) |
 
 ## Work surface — one surface, the stage narrows it
 

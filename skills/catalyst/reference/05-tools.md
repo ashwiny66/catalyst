@@ -27,7 +27,8 @@ You never check the mode yourself. A blocked tool's error names the transition t
 | `find` | List files matching a pattern. |
 | `get_repo_map` | File structure + symbol index, kept fresh by a daemon. (Build) |
 | `get_prd` | Read the PRD — the contract. (Spec/Build) |
-| `get_all_db_tables` | The lay of the land — every table, its description, its foreign keys. Start here for data work. Supports a `query` regex + paging. |
+| `db_skill` | The org's **business-understanding** skill for its database — what the business is, its components, how the tables serve each outcome, hard facts + query learnings. **Read this FIRST** (`mode='read'`) for any data work, so you explore tables knowing the business, not cold. Read-only here; the wizard's DB knowledge chat authors it. (Present only once business context has been captured.) |
+| `get_all_db_tables` | The lay of the land — every table, its description, its foreign keys. After the skill, start here for data work. Supports a `query` regex + paging. |
 | `get_table_detail` | The exact columns + types of specific tables — **column names can't be inferred**; read this before any query/code that touches columns. |
 | `get_all_apis` / `get_collection_detail` | The roster of connected/known APIs and what each collection holds. |
 | `get_api_endpoint_detail` | The precise request/response shape of specific endpoints. |

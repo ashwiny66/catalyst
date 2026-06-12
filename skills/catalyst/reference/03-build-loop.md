@@ -18,6 +18,7 @@ The PRD and repo map are inlined in `kickoff_message`. Don't re-fetch them with 
 
 1. **Acknowledge the handoff.** Tell the user "Entering Build mode." once. Don't repeat it.
 2. **For data work, ask the database knowledge base first.**
+   - `coding_workspace__db_skill` (`mode='read'`) — the org's business-understanding skill: what the business is, how the tables serve each outcome, hard facts + query learnings. **Read it before the tables** so you build knowing the business, not cold. (Present once business context has been captured; read-only here — the wizard's DB knowledge chat authors it.)
    - `coding_workspace__get_all_db_tables` lists every existing table with its purpose and relationships (supports a `query` regex + paging).
    - `coding_workspace__get_table_detail(table_name)` gives exact column names. **Column names cannot be inferred** — call this before writing any code that touches columns.
    - `coding_workspace__run_select_query("SELECT ... LIMIT N")` runs a read-only `SELECT` against the user's live DB (mysql / postgres / redshift, via-cloud or direct). Use it to verify a table actually has rows, to confirm an enum's distinct values, or to sanity-check a query before committing code that depends on its shape. Validator-enforced rules: SELECT/WITH/EXPLAIN only, mandatory `LIMIT` clause, 50-row cap on output.
