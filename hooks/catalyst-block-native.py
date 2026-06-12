@@ -17,12 +17,17 @@ Two responsibilities, in order:
 
 3. **Native tool guard for the OWNING tab.** While the sentinel is held by
    this tab, native ``Read``/``Write``/``Edit``/``Bash``/``Grep``/``Glob``/
-   ``Agent``/``WebFetch``/``WebSearch`` are refused with redirect messages
-   pointing at the matching ``coding_workspace__*`` MCP tool. Native tools
-   would silently edit the wrong filesystem (Mac vs EC2), so the block
-   prevents drift. EXCEPTION: in ``mode=deep_analysis`` native tools are
-   ALLOWED — that mode is org-level research with no remote app workspace to
-   protect, so the wrong-filesystem hazard doesn't apply.
+   ``WebFetch``/``WebSearch`` are refused with redirect messages pointing at
+   the matching ``coding_workspace__*`` MCP tool — in EVERY live mode
+   (menu/brainstorm/spec/coding/vibe_code/deep_analysis). Native tools would
+   silently touch the wrong filesystem (Mac vs EC2), so the block prevents
+   drift; the EC2 shell ``coding_workspace__bash`` is open in Discover instead,
+   so a research session's scratch persists in the Mindspace, not on the laptop.
+   ALLOW_EXACT (``Agent``, plan mode, ``TodoWrite``, …) is never touched.
+   ONE carve-out: native ``Bash`` running the Catalyst file-transfer curl
+   (``upload_to_workspace`` / ``download_from_workspace`` — bytes between the
+   user's LOCAL disk and the workspace over HTTPS) IS permitted in any mode,
+   because that file lives on the laptop and the remote shell can't reach it.
 
 4. **Session-id injection (the routing source of truth).** The Catalyst MCP is
    HTTP-remote and HOLDS NO active-session state — on a host shared by every
@@ -220,6 +225,26 @@ def _is_mode_denied_tool(mode: str, tool_name: str) -> bool:
         return False
     bare = tool_name.rsplit(_CODING_WS_MARKER, 1)[-1]
     return bare in denied
+
+
+# Workspace file-transfer carve-out. ``upload_to_workspace`` /
+# ``download_from_workspace`` RETURN a curl the agent must run with NATIVE bash:
+# the file lives on the USER'S LOCAL disk and the bytes POST/GET straight over
+# HTTPS to these endpoints (never through the conversation, so any size works).
+# ``coding_workspace__bash`` runs on the REMOTE EC2 and cannot see the laptop, so
+# this is the ONE native-shell op the workspace block must permit — in any mode.
+# Match is narrow (a curl to a Catalyst transfer endpoint), NOT a general bash
+# escape: a command must contain ``curl`` AND a transfer endpoint marker.
+_WORKSPACE_TRANSFER_MARKERS = ("/api/events/upload/", "/api/events/download/")
+
+
+def _is_workspace_transfer_bash(event: Dict[str, Any]) -> bool:
+    """True iff this native Bash call is the Catalyst upload/download curl
+    (local-disk ↔ workspace transfer). See ``_WORKSPACE_TRANSFER_MARKERS``."""
+    cmd = ((event.get("tool_input") or {}).get("command") or "")
+    if "curl" not in cmd:
+        return False
+    return any(marker in cmd for marker in _WORKSPACE_TRANSFER_MARKERS)
 
 
 def _read_sentinel() -> Dict[str, Any]:
@@ -473,6 +498,16 @@ def main() -> int:
             _debug_log(f"  → ALLOW {bare_name} + inject session_id={stamped[:8] or '(fresh)'} [{_src}]")
             return _emit_allow_updated_input(tool_input)
         if _is_allowed_for_owner(tool_name):
+            return 0
+        # ── Workspace file-transfer carve-out ──────────────────────────────
+        # upload_to_workspace / download_from_workspace return a curl the agent
+        # runs with NATIVE bash — the file is on the USER'S LOCAL disk and the
+        # bytes POST/GET straight over HTTPS to /api/events/{upload,download}.
+        # coding_workspace__bash runs on the REMOTE EC2 and can't reach the laptop,
+        # so this native-shell op MUST be permitted (in every mode). Narrow match
+        # on the Catalyst transfer endpoints (curl + endpoint), not a bash escape.
+        if tool_name == "Bash" and _is_workspace_transfer_bash(event):
+            _debug_log("  → ALLOW native Bash (workspace file-transfer curl)")
             return 0
         # NOTE: native Bash is NO LONGER carved out in Discover. The EC2 shell
         # `coding_workspace__bash` is open in deep_analysis instead (see
