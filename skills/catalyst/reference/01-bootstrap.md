@@ -18,7 +18,7 @@ Other fields (`db_connected`, `aws_connected`, `api_kb_count`, etc.) flesh out t
 | `backend_up` | `false` | "Catalyst isn't running on your machine. Start it with the usual `./start.sh` in the catalyst-builder folder, then say 'continue'." |
 | `db_connected` | `false` | "Catalyst doesn't have a database wired up yet. Open the Catalyst app in your browser, go to the Database step, and connect one. Then come back here." |
 | `api_kb_count` | `0` | "Heads up — your API knowledge base is empty. Optional, but if you'll integrate with any external service, the API step in the app gives me a much better foundation. Want to set that up first or push through?" |
-| `aws_connected` | `false` | "We can build this locally, but to share previews and persist your project across machines, finish the Cloud step in the app first. Want to set that up, or run local-only?" |
+| `aws_connected` | `false` | **Not a blocker — never say "no workspace".** Builds run on Catalyst's built-in dev server (hosted for you; the app scaffolds, runs, and gets a live URL there). Say: "No cloud setup needed to start — I'll build and run this on Catalyst's built-in dev server and you'll get a live URL. Connect your own cloud later (the Cloud step in the app) only if you want an isolated workspace or to keep the project across machines." Then proceed with the build. |
 | `instance_id` empty (when `aws_connected=true`) | half-set-up cloud | "Looks like the Cloud step didn't finish cleanly. Open the app and re-run that step." |
 
 Don't second-guess these — the user owns setup. Point them at the app step that owns the gap, then wait.
