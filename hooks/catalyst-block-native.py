@@ -16,17 +16,19 @@ Two responsibilities, in order:
    (we only guard the MCP namespace plus a small allowlist for the owner).
 
 3. **Native tool guard for the OWNING tab.** While the sentinel is held by
-   this tab, native ``Read``/``Write``/``Edit``/``Bash``/``Grep``/``Glob``/
-   ``WebFetch``/``WebSearch`` are refused with redirect messages pointing at
-   the matching ``coding_workspace__*`` MCP tool — in EVERY live mode
-   (menu/brainstorm/spec/coding/vibe_code/deep_analysis). Native tools would
-   silently touch the wrong filesystem (Mac vs EC2), so the block prevents
-   drift; the EC2 shell ``coding_workspace__bash`` is open in Discover instead,
-   so a research session's scratch persists in the Mindspace, not on the laptop.
-   ALLOW_EXACT (``Agent``, plan mode, ``TodoWrite``, …) is never touched.
-   ONE carve-out: native ``Bash`` running the Catalyst file-transfer curl
-   (``upload_to_workspace`` / ``download_from_workspace`` — bytes between the
-   user's LOCAL disk and the workspace over HTTPS) IS permitted in any mode,
+   this tab, native ``Read``/``Write``/``Edit``/``Bash``/``Grep``/``Glob`` are
+   refused with redirect messages pointing at the matching
+   ``coding_workspace__*`` MCP tool — in EVERY live mode (menu/brainstorm/spec/
+   coding/vibe_code/deep_analysis). Native FS/shell would silently touch the
+   wrong filesystem (Mac vs EC2), so the block prevents drift; the EC2 shell
+   ``coding_workspace__bash`` is open in Discover instead, so a research
+   session's scratch persists in the Mindspace, not on the laptop.
+   ALLOW_EXACT (``Agent``, plan mode, ``TodoWrite``, and native WEB
+   ``WebFetch``/``WebSearch``) is never touched — **native web access is
+   allowed in every mode** (read-only network, no filesystem hazard).
+   ONE further carve-out: native ``Bash`` running the Catalyst file-transfer
+   curl (``upload_to_workspace`` / ``download_from_workspace`` — bytes between
+   the user's LOCAL disk and the workspace over HTTPS) IS permitted in any mode,
    because that file lives on the laptop and the remote shell can't reach it.
 
 4. **Session-id injection (the routing source of truth).** The Catalyst MCP is
@@ -106,8 +108,6 @@ REDIRECTS = {
     "Bash":         "coding_workspace__bash",
     "Grep":         "coding_workspace__grep",
     "Glob":         "coding_workspace__find",
-    "WebFetch":     "coding_workspace__web_search",
-    "WebSearch":    "coding_workspace__web_search",
     "NotebookEdit": "coding_workspace__edit",
 }
 
@@ -127,6 +127,12 @@ ALLOW_EXACT = {
     # cc_session_id, so its OWN native FS/shell calls are still governed by this block
     # while a build is active — it should drive the project via coding_workspace__*.
     "Agent",
+    # Native WEB access — allowed in EVERY mode (2026-06-12). WebFetch/WebSearch are
+    # read-only network reads with NO filesystem hazard (the whole reason the block
+    # exists), so the agent can pull docs / look things up directly rather than route
+    # through coding_workspace__web_search. Moved OUT of REDIRECTS into here.
+    "WebFetch",
+    "WebSearch",
 }
 
 
