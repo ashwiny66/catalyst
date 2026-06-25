@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "catalyst",
-      "description": "Build apps via Catalyst from inside Claude Code.",
+      "description": "Your enterprise AI team inside Claude Code — bring a problem, the right employee solves it.",
       "source": {
         "source": "url",
         "url": "https://github.com/buildwithcatalystai/catalyst.git"

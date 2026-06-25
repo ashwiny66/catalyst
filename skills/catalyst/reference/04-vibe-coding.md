@@ -6,7 +6,7 @@
 
 After `complete_build` runs, the project's status flips to "completed" but the session is **not closed**. You can keep using `coding_workspace__*` tools to make changes. Every change continues to land in the same project history the wizard's ChatPane is reading. The running app updates live — typically the user just refreshes their preview tab and sees the change.
 
-The only practical difference between a fresh Build handoff and vibe-editing:
+The only practical difference between a fresh Engineer handoff and vibe-editing:
 
 - In a fresh build, you start from a kickoff message that includes the full PRD + repo map.
 - In vibe-edit, you don't get a fresh kickoff. The user describes the change they want and you use the tools (`coding_workspace__get_repo_map`, `coding_workspace__get_prd`, `coding_workspace__read`) to figure out where it goes.
@@ -34,7 +34,7 @@ The dev servers are already running and reload on file changes; you don't restar
 Every assistant turn during vibe-edit lands in the **same** Mindspace history as the original build. This means:
 
 - **Do** keep calling `coding_workspace__*` tools for any change — the session stays bound; the edits land in order.
-- The current Mindspace is the active one; a stage switch (e.g. back to `start_spec` to re-plan) continues it — it never forks.
+- The current Mindspace is the active one; bringing another employee back in (e.g. `start_spec` to re-plan with the PM) continues it — it never forks.
 
 If the user wants a genuinely *new* Mindspace, that's the moment for `switch_mindspace()` (clean slate), then `start_app_building`.
 

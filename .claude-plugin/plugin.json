@@ -1,7 +1,7 @@
 {
   "name": "catalyst",
-  "version": "0.1.32",
-  "description": "Your forward-deployed PM inside Claude Code \u2014 Spec, Build",
+  "version": "0.1.33",
+  "description": "Your enterprise AI team inside Claude Code \u2014 an Analyst, a PM, and an Engineer that investigate, plan, and ship",
   "author": {
     "name": "Catalyst",
     "email": "dev@buildwithcatalyst.com"

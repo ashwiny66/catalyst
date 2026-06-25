@@ -1,10 +1,10 @@
-# Build mode — you're the engineer now
+# The Engineer — your build loop
 
-> **Read this when:** `start_app_building` returned `mode: "coding"` (the internal value — it *means* Build), or you're driving an active Build session.
+> **Read this when:** `start_app_building` returned `mode: "coding"` (the internal value — it means the Engineer is on it), or you're driving an active build.
 
-## What the Build handoff gives you
+## What the handoff gives you
 
-When `start_app_building` enters Build mode, the response carries:
+When `start_app_building` brings the Engineer in, the response carries:
 
 - `kickoff_message` — a single string with the workspace path, tech stack summary, the full PRD, the repo map, and the build rules. **This IS your build instruction.** Treat it as your first user-turn brief.
 - `app_root` — the project's working directory; every `coding_workspace__*` path is relative to it.
@@ -16,7 +16,7 @@ The PRD and repo map are inlined in `kickoff_message`. Don't re-fetch them with 
 
 ## The contract — what to do, in order
 
-1. **Acknowledge the handoff.** Tell the user "Entering Build mode." once. Don't repeat it.
+1. **Acknowledge the handoff.** Tell the user the Engineer's on it once — e.g. "On it — building now." Don't repeat it.
 2. **For data work, ask the database knowledge base first.**
    - `coding_workspace__db_skill` (`mode='read'`) — the org's business-understanding skill: what the business is, how the tables serve each outcome, hard facts + query learnings. **Read it before the tables** so you build knowing the business, not cold. (Present once business context has been captured; read-only here — the wizard's DB knowledge chat authors it.)
    - `coding_workspace__get_all_db_tables` lists every existing table with its purpose and relationships (supports a `query` regex + paging).
@@ -45,7 +45,7 @@ If the user says "it looks broken" *after* completion, you're already in vibe-ed
 
 ## Tool-policy enforcement
 
-While a Build session is active, native tools (Read / Edit / Write / Bash / Grep / etc.) are blocked by Catalyst's policy hook. **Always use `coding_workspace__*` instead.** If the hook blocks you, the error message names the right replacement; follow the redirect.
+While the Engineer is on it, native tools (Read / Edit / Write / Bash / Grep / etc.) are blocked by Catalyst's policy hook. **Always use `coding_workspace__*` instead.** If the hook blocks you, the error message names the right replacement; follow the redirect.
 
 The allowlist still includes `TodoWrite`, `AskUserQuestion`, `Skill`, `SlashCommand`, `ToolSearch`, `ExitPlanMode`, `EnterPlanMode` — so planning + clarifying questions still work normally.
 
@@ -65,4 +65,4 @@ If the user asks "did that get saved?" the answer is always yes.
 
 ## Cost note
 
-The Build LLM cost is on the user's account (Claude Code), not Catalyst's. The Spec and database steps run on Catalyst's account.
+The Engineer's LLM cost is on the user's account (Claude Code), not Catalyst's. The PM (planning) and database steps run on Catalyst's account.
