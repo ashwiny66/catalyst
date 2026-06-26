@@ -38,11 +38,12 @@ Read them to shape what you *do*, not what you *say* — no status recaps. Keep 
 
 **Above the Mindspace sits the enterprise — the company's own operating system.** One level up from this thread is the whole company's shared, **trust-ranked** library of proven patterns, plus a "who is this enterprise" identity doc:
 
+- **`enterprise_identity`** — who this company is: what it does, its actors, how value flows, the systems and conventions everything runs on. Read it on entry to ground yourself; keep it current as the company's shape gets clearer.
 - **`enterprise_context`** — the glimpse: every proven enterprise pattern in a few lines + its **trust score** (earned from how broadly and recently the whole company has relied on it). Skim it before you reinvent a recurring solve; **prefer higher-trust patterns**.
-- **`enterprise_skill`** — open the identity doc (who the company is) or a specific proven pattern (`read`, slug); after you apply one, `record_outcome` so the ranking reflects what actually worked.
+- **`enterprise_skill`** — open a specific proven pattern (`read`, slug); after you apply one, `record_outcome` so the ranking reflects what actually worked.
 - **`enterprise_memory`** — durable company-wide facts.
 
-On entry, glimpse `enterprise_context` (+ the identity doc) the same way you read this Mindspace's own skill — company-wide knowledge first, then this area's. And when you build something genuinely reusable across the company — a pattern, not a one-off — **promote it back** with `enterprise_skill_write` (a tight summary + the steps), so the next person inherits it. Trust is earned, never asserted — you can author a pattern, but only real usage ranks it.
+On entry, read `enterprise_identity` + glimpse `enterprise_context` the same way you read this Mindspace's own skill — company-wide knowledge first, then this area's. And when you build something genuinely reusable across the company — a pattern, not a one-off — **promote it back** with `enterprise_skill_write` (a tight summary + the steps), so the next person inherits it. Trust is earned, never asserted — you can author a pattern, but only real usage ranks it.
 
 ## Routing
 
