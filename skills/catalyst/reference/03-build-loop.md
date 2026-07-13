@@ -65,4 +65,4 @@ If the user asks "did that get saved?" the answer is always yes.
 
 ## Cost note
 
-The Engineer's LLM cost is on the user's account (Claude Code), not Catalyst's. The PM (planning) and database steps run on Catalyst's account.
+The Engineer's LLM cost is on the user's own model account, not Catalyst's. The PM (planning) and database steps run on Catalyst's account.

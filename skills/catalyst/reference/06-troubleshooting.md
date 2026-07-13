@@ -11,8 +11,8 @@
 | An external MCP (e.g. a Redshift/Slack/Notion MCP) is blocked with "external MCP — blocked while a Catalyst session is active" | Expected — Catalyst is a strict allow-list. Do the work with the Catalyst tools (`run_select_query`/`run_python`/KB, or `coding_workspace__*`). Only `abandon_build` to use other MCPs. |
 | A `coding_workspace__bash` returns "fatal" / "unreachable" after retries | Connection to the project workspace dropped. Re-call the same tool — most of the time it rebuilds the connection automatically. If it fails twice, point the user at the Cloud step in the app. |
 | Live preview shows the project but the chat pane stops updating | The user's browser tab is stale — have them refresh. Your work is still being saved; refresh just reconnects the live stream. |
-| The session marker sticks around for a build that's already over (Claude Code crashed mid-build) | `current_session` to see what's marked → `abandon_build(session_id, reason="stale")`. |
-| User wants to run two builds at once | Only one active build per Claude Code at a time. `abandon_build` (or `switch_mindspace`) on the current one before starting the new one. |
+| The session marker sticks around for a build that's already over (the agent crashed mid-build) | `current_session` to see what's marked → `abandon_build(session_id, reason="stale")`. |
+| User wants to run two builds at once | Only one active build at a time. `abandon_build` (or `switch_mindspace`) on the current one before starting the new one. |
 
 ## Resetting bad state — order of escalation
 
@@ -21,7 +21,7 @@ Try these in order, from least to most destructive:
 1. `abandon_build(session_id)` — cleanest exit. Releases the session marker and marks the project abandoned in the user's history (it stays visible in `list_mindspaces` if they want to inspect it later).
 2. Tell the user to clear their local session marker manually (`rm ~/.claude/state/catalyst-active-session.json`) only if `abandon_build` itself failed because Catalyst is down.
 3. Tell the user to restart Catalyst (`./start.sh` in the catalyst-builder folder). This drops Catalyst's in-memory state for any active build but never touches saved project history.
-4. Tell the user to restart Claude Code itself. Last resort — they lose any unsent messages.
+4. Tell the user to restart the terminal itself. Last resort — they lose any unsent messages.
 
 ## When the user asks "is the build broken?"
 

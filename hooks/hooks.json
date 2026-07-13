@@ -1,5 +1,5 @@
 {
-  "description": "Catalyst plugin hooks: PreToolUse guard + PostToolUse/Stop event sink",
+  "description": "Catalyst plugin hooks: PreToolUse guard + PostToolUse/Stop/UserPromptSubmit event sink",
   "hooks": {
     "PreToolUse": [
       {
@@ -24,6 +24,17 @@
       }
     ],
     "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/hook_record.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
       {
         "hooks": [
           {

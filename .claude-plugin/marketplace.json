@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "catalyst",
-      "description": "Your enterprise AI team inside Claude Code — bring a problem, the right employee solves it.",
+      "description": "Your enterprise AI team — bring a problem, the right teammate solves it; a Curator learns from every job so the team gets smarter.",
       "source": {
         "source": "url",
         "url": "https://github.com/buildwithcatalystai/catalyst.git"

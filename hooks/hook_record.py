@@ -809,6 +809,23 @@ def _translate_post_tool(event: Dict[str, Any]) -> Optional[List[Dict[str, Any]]
     return out
 
 
+def _translate_user_prompt(event: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
+    """UserPromptSubmit → one ``user_text`` record: the user's typed ask, the
+    TASK side of the transcript. Persisted as a HumanMessage in the checkpoint
+    (via /api/events/record) so it interleaves with the assistant + tool turns —
+    without it only the agent's side is captured, and the task is unminable.
+    No transcript scan needed: the prompt is on the event directly.
+
+    Must stay stdout-silent (UserPromptSubmit injects a hook's stdout into the
+    prompt context) — we only return records + file-log, never print."""
+    text = (event.get("prompt") or "").strip()
+    if not text:
+        return None
+    if len(text) > 20000:  # guard a runaway paste from bloating the checkpoint
+        text = text[:20000] + "\n…[truncated]"
+    return [{"kind": "user_text", "payload": {"text": text}}]
+
+
 def _translate_stop(event: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
     """End-of-turn → captures (1) any thinking blocks, (2) the assistant
     text from the most recent assistant turn, and (3) an ``auto_complete``
@@ -1490,6 +1507,8 @@ def _run(ctx: _RunCtx, stream) -> int:
         records = _translate_post_tool(event)
     elif ctx.hook == "Stop":
         records = _translate_stop(event)
+    elif ctx.hook == "UserPromptSubmit":
+        records = _translate_user_prompt(event)
     else:
         ctx.noop_reason = f"unhandled-hook({ctx.hook})"
         return 0
