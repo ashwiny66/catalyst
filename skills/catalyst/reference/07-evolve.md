@@ -2,7 +2,7 @@
 
 The Curator's heavier capability. **Reflect** (§4 of SKILL.md) keeps a skill *current* after every job; **Evolve** makes a skill measurably *stronger* — a deliberate optimization loop the user asks for by name ("make this skill better", "strengthen / evolve / perfect this skill"). Never in the normal flow.
 
-**Read this file in full before you run Evolve, and adhere to it step by step.** Evolve is driven by the `evolve_skill` tool, but the tool only holds the state and hands you the next directive — *you* are the intelligence at every step (generate, judge, rewrite). **No model API, no external optimizer runs — your own reasoning does each step.** If you skip a step or lower the bar below, the result is a skill that looks changed but isn't stronger.
+**You don't need to read this to run Evolve — the `evolve_skill` tool walks you through every step (each call returns the next directive, with the full procedure inline).** This file is the background + the quality bar; internalize the bar so your run is real, not theater. Evolve is driven by the tool, but the tool only holds the state and hands you the next directive — *you* are the intelligence at every step (generate, judge, rewrite). **No model API, no external optimizer runs — your own reasoning does each step.** If you skip a step or lower the bar below, the result is a skill that looks changed but isn't stronger.
 
 ## The core idea
 
