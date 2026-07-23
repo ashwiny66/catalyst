@@ -15,21 +15,23 @@ Two responsibilities, in order:
    continues normally. Non-catalyst tools in either tab are unaffected
    (we only guard the MCP namespace plus a small allowlist for the owner).
 
-3. **Native tool guard for the OWNING tab.** While the sentinel is held by
-   this tab, native ``Read``/``Write``/``Edit``/``Bash``/``Grep``/``Glob`` are
-   refused with redirect messages pointing at the matching
-   ``coding_workspace__*`` MCP tool — in EVERY live mode (menu/brainstorm/spec/
-   coding/vibe_code/deep_analysis). Native FS/shell would silently touch the
-   wrong filesystem (Mac vs EC2), so the block prevents drift; the EC2 shell
-   ``coding_workspace__bash`` is open in Discover instead, so a research
-   session's scratch persists in the Mindspace, not on the laptop.
-   ALLOW_EXACT (``Agent``, plan mode, ``TodoWrite``, and native WEB
-   ``WebFetch``/``WebSearch``) is never touched — **native web access is
-   allowed in every mode** (read-only network, no filesystem hazard).
-   ONE further carve-out: native ``Bash`` running the Catalyst file-transfer
-   curl (``upload_to_workspace`` / ``download_from_workspace`` — bytes between
-   the user's LOCAL disk and the workspace over HTTPS) IS permitted in any mode,
-   because that file lives on the laptop and the remote shell can't reach it.
+3. **Native tool guard for the OWNING tab — BUILD-ONLY (2026-07-23).** Native
+   ``Read``/``Write``/``Edit``/``Bash``/``Grep``/``Glob`` are blocked (redirected
+   to the matching ``coding_workspace__*`` MCP tool) **only while the Engineer is
+   on the work — i.e. mode ∈ {coding, vibe_code} (Build)**. There the workspace
+   lives on EC2 / an app_root and native FS/shell would silently touch the wrong
+   filesystem, so the block prevents drift. In **every other mode — the Analyst
+   (deep_analysis), the PM (brainstorm), the Curator, and menu — native tools are
+   OPEN** (the pre-2026-06-09 behaviour, restored on user request) so those
+   employees can read/inspect files on the user's own machine. See
+   ``_WORKSPACE_BOUND_MODES``. ALLOW_EXACT (``Agent``, plan mode, ``TodoWrite``,
+   and native WEB ``WebFetch``/``WebSearch``) is never touched — **native web
+   access is allowed in every mode incl. Build** (read-only network, no FS hazard).
+   ONE further carve-out even inside Build: native ``Bash`` running the Catalyst
+   file-transfer curl (``upload_to_workspace`` / ``download_from_workspace`` —
+   bytes between the user's LOCAL disk and the workspace over HTTPS) IS permitted
+   in any mode, because that file lives on the laptop and the remote shell can't
+   reach it.
 
 4. **Session-id injection (the routing source of truth).** The Catalyst MCP is
    HTTP-remote and HOLDS NO active-session state — on a host shared by every
@@ -154,6 +156,15 @@ _DENIED_BY_MODE = {
     "deep_analysis": {"write", "edit", "playwright_test", "save_prd"},
     "spec": {"write", "edit", "bash", "playwright_test"},
 }
+
+# Modes where native FS/shell (Read/Write/Edit/Bash/Grep/Glob) stays BOUND to the
+# remote workspace (redirected to coding_workspace__*). These are the Engineer's
+# Build modes — the app lives on EC2 / an app_root and a native tool would edit the
+# wrong filesystem. Every OTHER mode (the Analyst=deep_analysis, the PM=brainstorm,
+# the Curator, and menu) gets native tools OPEN so those employees can work with the
+# user's local files (restored 2026-07-23; the pre-2026-06-09 behaviour). Native web
+# (WebFetch/WebSearch) + the upload/download transfer curl stay allowed in ALL modes.
+_WORKSPACE_BOUND_MODES = {"coding", "vibe_code"}
 
 # Session routing is CLIENT-SIDE. The remote MCP server holds NO active-session
 # state (on a shared host that would be another user's), so this hook stamps the
@@ -505,6 +516,15 @@ def main() -> int:
             return _emit_allow_updated_input(tool_input)
         if _is_allowed_for_owner(tool_name):
             return 0
+        # ── Native tools OPEN outside Build (Analyst / PM / Curator / menu) ──
+        # Only the Engineer's Build modes (coding/vibe_code) bind native FS/shell
+        # to the remote workspace; in every other mode the employee may read and
+        # inspect files on the user's own machine directly. REDIRECTS holds exactly
+        # the native FS/shell names (Read/Write/Edit/Bash/Grep/Glob), so external
+        # MCPs still fall through to the deny below. (2026-07-23 restore.)
+        if tool_name in REDIRECTS and mode not in _WORKSPACE_BOUND_MODES:
+            _debug_log(f"  → ALLOW native {tool_name} (mode={mode}: native open outside Build)")
+            return 0
         # ── Workspace file-transfer carve-out ──────────────────────────────
         # upload_to_workspace / download_from_workspace return a curl the agent
         # runs with NATIVE bash — the file is on the USER'S LOCAL disk and the
@@ -515,11 +535,9 @@ def main() -> int:
         if tool_name == "Bash" and _is_workspace_transfer_bash(event):
             _debug_log("  → ALLOW native Bash (workspace file-transfer curl)")
             return 0
-        # NOTE: native Bash is NO LONGER carved out in Discover. The EC2 shell
-        # `coding_workspace__bash` is open in deep_analysis instead (see
-        # _DENIED_BY_MODE above) so the agent's plan/scratch persists IN the
-        # Mindspace workspace rather than on the laptop. So native Bash falls
-        # through to the redirect below → coding_workspace__bash, in every mode.
+        # NOTE: reaching here means mode ∈ Build (coding/vibe_code) — native FS/shell
+        # in Analyst/PM/Curator/menu already returned ALLOW above. The transfer curl
+        # carve-out just above still fires in Build so a build can pull local files.
         # (Agent + Enter/ExitPlanMode stay always-allowed via ALLOW_EXACT.)
         # External MCP server (any mcp__* that isn't catalyst-mcp — those passed
         # _is_allowed_for_owner above). BLACKLISTED while a Catalyst session is
@@ -534,21 +552,22 @@ def main() -> int:
                 "coding_workspace tools for builds. To use other MCPs, end the "
                 "Catalyst session first (abandon_build / current_session)."
             )
-        # Native FS/shell tool — refuse with a redirect to the matching
-        # coding_workspace tool. Spec + Build both protect the project's
-        # workspace (EC2 / app_root); there is no allow-all-native mode.
+        # Native FS/shell tool in a BUILD mode (coding/vibe_code) — refuse with a
+        # redirect to the matching coding_workspace tool. The Engineer's app lives on
+        # EC2 / an app_root; a native tool would edit the wrong filesystem. (Native
+        # tools are OPEN for the Analyst/PM/Curator — those returned ALLOW above.)
         redirect_bare = REDIRECTS.get(tool_name) or "coding_workspace__*"
         reason = (
-            f"Native `{tool_name}` is blocked while a Catalyst session is "
-            f"active (mode={mode}). The build's workspace lives on EC2 (or "
-            f"is locked to the project's app_root); native tools would "
-            f"silently edit the wrong file. Use the catalyst tool "
-            f"`{redirect_bare}` instead (the namespaced version your "
-            f"toolset already has loaded) — it routes to the correct "
-            f"workspace automatically.\n\n"
-            f"To unlock native tools, end the Catalyst session first: "
-            f"call `abandon_build` or `current_session` (catalyst-mcp "
-            f"tools, namespaced as your toolset registered them)."
+            f"Native `{tool_name}` is blocked in Build (mode={mode}) — the "
+            f"Engineer's app lives on EC2 (or is locked to the project's "
+            f"app_root), so native tools would silently edit the wrong file. Use "
+            f"`{redirect_bare}` instead (the namespaced version your toolset "
+            f"already has loaded) — it routes to the correct workspace "
+            f"automatically. To pull a file off the user's laptop into the build, "
+            f"call `upload_to_workspace` and run the curl it returns.\n\n"
+            f"Native tools are open for the Analyst / PM / Curator. To unlock them "
+            f"here too, end the Catalyst session first (`abandon_build` / "
+            f"`current_session`)."
         )
         return _emit_deny(reason)
 
