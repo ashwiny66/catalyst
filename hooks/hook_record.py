@@ -173,7 +173,7 @@ def _new_run_ctx() -> _RunCtx:
     """Create a fresh ctx AND publish its run_id into the ContextVar so
     every log line for the rest of this invocation gets the prefix —
     even from helpers that don't take ctx (e.g. _maybe_update_local_sentinel,
-    _is_owning_tab, _maybe_clear_local_state)."""
+    _maybe_clear_local_state)."""
     ctx = _RunCtx(run_id=uuid4().hex[:6], started_at=time.monotonic())
     _run_id_var.set(ctx.run_id)
     return ctx
@@ -205,10 +205,23 @@ def _log_debug_payload(ctx: _RunCtx, label: str, payload: Any) -> None:
     dlog.debug("%s: %s", label, serialized)
 
 
-# ── Sentinel ────────────────────────────────────────────────────────────────
+# ── Sentinel (per-tab session registry) ─────────────────────────────────────
+#
+# Multi-session model (2026-08-10): the active-session file is now a PER-TAB
+# REGISTRY (see session_registry.py) — an array of rows keyed by the Claude
+# Code tab's session_id. This hook reads/writes ONLY the firing tab's row.
+# The helpers below keep their old names/signatures; they delegate to the
+# registry scoped to ``_CC_SESSION_ID`` (stamped at the top of ``_run``).
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+try:
+    import session_registry as _registry
+except Exception:  # pragma: no cover — a broken registry must not break the hook
+    _registry = None
 
-SENTINEL_PATH = Path.home() / ".claude" / "state" / "catalyst-active-session.json"
+# The firing tab's Claude Code session id — set once per invocation in _run()
+# before any sentinel helper runs. Empty until then.
+_CC_SESSION_ID = ""
 
 # Events JWT — minted by the wizard backend inside McpRunner.start_coding /
 # enter_coding_mode, embedded in the tool response, persisted here by
@@ -264,19 +277,21 @@ def _now_iso() -> str:
 
 
 def _read_sentinel() -> Optional[Dict[str, Any]]:
-    if not SENTINEL_PATH.exists():
+    """The FIRING TAB's registry row, legacy sentinel shape. None when this
+    tab has no active Catalyst session (other tabs' rows are invisible here)."""
+    if _registry is None or not _CC_SESSION_ID:
         return None
     try:
-        return json.loads(SENTINEL_PATH.read_text())
+        return _registry.read_entry(_CC_SESSION_ID)
     except Exception as exc:
         logger.warning("sentinel read failed: %s", exc)
         return None
 
 
 def _write_sentinel_full(session_id: str, app_root: str, gen_stream_id: str, mode: str) -> bool:
-    """Mirror of catalyst-mcp's ``sentinel.write_sentinel`` — full session
-    write that preserves cc_session_id + started_at (claimed by the
-    PreToolUse hook). Returns True if anything actually changed."""
+    """Full session write for the firing tab's row (row identity —
+    cc_session_id / created_dt — is preserved by the registry). Returns True
+    if anything actually changed."""
     return _patch_sentinel({
         "session_id": session_id,
         "app_root": app_root,
@@ -286,36 +301,20 @@ def _write_sentinel_full(session_id: str, app_root: str, gen_stream_id: str, mod
 
 
 def _patch_sentinel(updates: Dict[str, Any]) -> bool:
-    """Patch the local sentinel with the given fields. Returns True iff at
-    least one field actually changed. Best-effort — never raises.
+    """Patch the firing tab's registry row. Returns True iff at least one
+    field actually changed. Best-effort — never raises.
 
-    ``None`` values in ``updates`` MEAN "clear this field" (sets it to
-    None in the stored JSON) — used by ``pause_after_complete`` to drop
-    session_id while preserving mode=menu. Empty strings / empty dicts
-    are treated as no-op."""
-    try:
-        if not SENTINEL_PATH.exists():
-            return False
-        current = json.loads(SENTINEL_PATH.read_text())
-    except Exception as exc:
-        logger.warning("sentinel patch read failed: %s", exc)
-        return False
-    changed = False
-    for k, v in (updates or {}).items():
-        # Distinguish "clear this field" (None) from "skip" (empty string / dict).
-        if v == "" or v == {}:
-            continue
-        if current.get(k) != v:
-            current[k] = v
-            changed = True
-    if not changed:
+    ``None`` values in ``updates`` MEAN "clear this field" — used by
+    ``pause_after_complete`` to drop session_id while preserving mode=menu.
+    Empty strings / empty dicts are treated as no-op. Patching never CLAIMS
+    a row (that's the PreToolUse hook's job) — no row → False."""
+    if _registry is None or not _CC_SESSION_ID:
         return False
     try:
-        SENTINEL_PATH.write_text(json.dumps(current, indent=2))
+        return _registry.patch(_CC_SESSION_ID, updates or {})
     except Exception as exc:
-        logger.warning("sentinel patch write failed: %s", exc)
+        logger.warning("sentinel patch failed: %s", exc)
         return False
-    return True
 
 
 # Substring marker — matches both `mcp__catalyst-mcp__*` (direct install)
@@ -499,12 +498,12 @@ def _maybe_update_local_sentinel(payload: Dict[str, Any]) -> None:
             logger.info("sentinel set: mode=%s session_id=%s", full_mode, sid[:8])
         return
 
-    # Partial response — guard against a stray/cross-tab sid clobbering the
+    # Partial response — guard against a stray sid clobbering this tab's
     # active session, then patch only what's present.
     if current_sid and current_sid != sid:
         logger.warning(
             "sentinel session_id mismatch (partial): local=%s response=%s tool=%s — "
-            "ignoring update (stale response or cross-tab race?)",
+            "ignoring update (stale response for this tab?)",
             current_sid[:8], sid[:8], payload.get("__tool_name__", "?"),
         )
         return
@@ -529,34 +528,26 @@ def _maybe_clear_local_state(payload: Dict[str, Any]) -> None:
     """Mirror of catalyst-mcp's ``_maybe_clear_local_state`` in
     [tools/lifecycle.py:804-829](catalyst_mcp/tools/lifecycle.py#L804).
 
-    Also clears the events_jwt file alongside the sentinel — the JWT is
-    bound to the coding-mode lifecycle, so it dies with the sentinel.
+    Per-tab: both branches touch ONLY the firing tab's registry row. The
+    events_jwt is NOT cleared here — it's identity-scoped (shared by every
+    tab), so one tab ending its build must not de-auth the others; only
+    ``logout`` (PreToolUse Case 0) deletes it.
 
-    ``pause_local: True``     → delete sentinel + events_jwt (abandon / end).
-    ``pause_after_complete``  → flip sentinel to mode='menu', clear
-                                session_id, delete events_jwt (build done;
-                                a new coding entry will mint a fresh one).
+    ``pause_local: True``     → remove this tab's row (abandon / end).
+    ``pause_after_complete``  → flip this tab's row to mode='menu', clear
+                                session_id (build done; the tab stays
+                                registered for its next entry).
     """
     if payload.get("pause_local"):
         try:
-            SENTINEL_PATH.unlink(missing_ok=True)
-            logger.info("sentinel cleared (pause_local)")
+            if _registry is not None and _CC_SESSION_ID and _registry.remove(_CC_SESSION_ID):
+                logger.info("registry row removed (pause_local)")
         except Exception as exc:
-            logger.warning("sentinel clear failed: %s", exc)
-        try:
-            EVENTS_JWT_PATH.unlink(missing_ok=True)
-            logger.info("events_jwt cleared (pause_local)")
-        except Exception as exc:
-            logger.warning("events_jwt clear failed: %s", exc)
+            logger.warning("registry row remove failed: %s", exc)
     elif payload.get("pause_after_complete"):
         # session_id=None means "clear this field" — handled by _patch_sentinel.
         if _patch_sentinel({"mode": "menu", "session_id": None}):
             logger.info("sentinel transitioned: mode=menu, session_id cleared (pause_after_complete)")
-        try:
-            EVENTS_JWT_PATH.unlink(missing_ok=True)
-            logger.info("events_jwt cleared (pause_after_complete)")
-        except Exception as exc:
-            logger.warning("events_jwt clear failed: %s", exc)
 
 
 def _maybe_persist_events_jwt(payload: Dict[str, Any]) -> None:
@@ -608,46 +599,12 @@ def _enrich_sentinel_from_response(tool_name: str, response: Any) -> None:
     _maybe_clear_local_state(payload)
 
 
-def _is_owning_tab(sentinel: Dict[str, Any], cc_session_id: str) -> bool:
-    """Membership check — drop the record if this hook event didn't come
-    from the owning Claude Code tab.
-
-    Ownership is claimed by the PreToolUse block hook the moment a tab
-    first invokes a ``mcp__catalyst-mcp__*`` tool (i.e. when ``/catalyst``
-    activates and calls ``health_check``). Record hooks (PostToolUse,
-    Stop) are read-only on this — they NEVER claim, only check. That way
-    an unrelated tab's tool call (e.g. someone running a different MCP
-    server in a second tab) can't accidentally register itself as the
-    catalyst owner via the record path.
-
-    Returns True if the firing tab is the owner (record should be posted).
-    False if the sentinel hasn't been claimed yet OR if a different tab
-    owns it.
-    """
-    if not cc_session_id:
-        return False
-    owner = (sentinel.get("cc_session_id") or "").strip()
-    if not owner:
-        # Sentinel exists but owner not yet stamped — wait for the
-        # PreToolUse hook to register first. Don't post yet.
-        logger.info(
-            "hook deferred: sentinel has no owner yet, "
-            "waiting for PreToolUse to register (cc_session=%s)",
-            cc_session_id[:8],
-        )
-        return False
-    if owner == cc_session_id:
-        return True
-    # INFO not WARNING: cross-tab firing is expected behavior, not an
-    # error. The owning tab will (separately) handle the same hook on its
-    # own subprocess. Spamming WARNINGs here clutters the log for the
-    # actual problems.
-    logger.info(
-        "BLOCKED: cc_session=%s is not the owner — record dropped "
-        "(owner=%s, catalyst session=%s)",
-        cc_session_id[:8], owner[:8], (sentinel.get("session_id") or "")[:8],
-    )
-    return False
+# NOTE: the old ``_is_owning_tab`` cross-tab owner check is gone with the
+# single-owner sentinel. The registry is keyed by the firing tab's
+# cc_session_id, so ``_read_sentinel()`` returning a row already MEANS "this
+# tab has an active Catalyst session" — a row can't belong to another tab.
+# Claiming still happens ONLY in the PreToolUse hook; the record path never
+# creates rows (``_patch_sentinel`` refuses when no row exists).
 
 
 # ── Translate Claude Code hook event → list of (kind, payload) ──────────────
@@ -1424,19 +1381,21 @@ def _run(ctx: _RunCtx, stream) -> int:
     )
     _log_debug_payload(ctx, "stdin_event", event)
 
+    # Per-tab registry: stamp the firing tab's id so every sentinel helper
+    # below (read/patch/remove) operates on THIS tab's row only.
+    if not cc_session_id:
+        ctx.owner_match = "no-cc-id"
+        ctx.noop_reason = "no-cc-session-id"
+        return 0
+    global _CC_SESSION_ID
+    _CC_SESSION_ID = cc_session_id
+
     sentinel = _read_sentinel()
     if sentinel is None:
-        ctx.noop_reason = "no-sentinel"
-        return 0  # no active build → no-op
-
-    # Hard ownership check: if cc_session_id doesn't match the sentinel
-    # owner, drop the record. Logged at INFO (not WARNING) because this is
-    # the expected case for hooks firing in non-owning tabs — happens
-    # constantly during cross-tab Claude Code use; not an error.
-    if not _is_owning_tab(sentinel, cc_session_id):
-        ctx.owner_match = "false"
-        owner = (sentinel.get("cc_session_id") or "")[:8]
-        ctx.noop_reason = f"not-owner(owner={owner})"
+        # This tab has no registry row → no active Catalyst session here.
+        # Other tabs' sessions are invisible to this hook (per-tab rows) —
+        # the old cross-tab "not-owner" drop can no longer happen.
+        ctx.noop_reason = "no-session-for-tab"
         return 0
     ctx.owner_match = "true"
 

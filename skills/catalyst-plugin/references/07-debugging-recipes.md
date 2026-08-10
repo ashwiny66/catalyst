@@ -13,39 +13,40 @@ The bug shapes we've actually hit. Each entry: **symptom → first 3 things to c
 
 **Fix**: the patch in `_run` writes offset = EOF on the `prev_mode → coding` transition. If the patch was reverted, restore it.
 
-## Cross-tab leakage (different tab's text in this build's chat)
+## Wrong tab's turns in a Mindspace's chat
 
-**Symptom**: ChatPane shows narration that the build agent never said.
+**Symptom**: ChatPane for Mindspace X shows narration from work done in a different tab.
 
-**Check**:
-1. `catalyst-event-sink.log` — search for `BLOCKED: cc_session=X is not the owner`. If you DON'T see them around the timestamps in question, owner gate isn't firing.
-2. Sentinel `cc_session_id` — does it match the tab you THINK is the owner? Use `cat ~/.claude/state/catalyst-active-session.json`.
-3. `_is_owning_tab` in [hook_record.py:573](../../../codeGen/catalyst-plugin/hooks/hook_record.py#L573) — logic intact?
+Since the per-tab registry (2026-08-10, v0.1.44) there is NO cross-tab owner gate — tabs are isolated by construction: each hook fire reads only the FIRING tab's row (`session_registry.read_entry(event.session_id)`), and offsets/anchors are keyed by the tab's own transcript path. Two tabs deliberately pointed at the SAME Mindspace **interleave in one chat history — that's supported behavior**, not a leak.
 
-**Fix**: if owner is empty, PreToolUse never claimed. Look at `catalyst-hook-debug.log` for `FIRED tool=… is_catalyst=False` — the first call wasn't a catalyst tool, so no claim. The fix is to ensure `ensure_auth` is the FIRST tool the skill calls (it always should be).
+**Check** (for a real mix-up):
+1. `python3 -c "import sys; sys.path.insert(0,'$HOME/codeGen/catalyst-plugin/hooks'); import session_registry, json; print(json.dumps(session_registry.all_entries(), indent=2))"` — is some row stamped with a `session_id` you didn't expect? Which tab claimed it (`cc_session_id`), when (`last_updated_dt`)?
+2. `catalyst-event-sink.log` — the `session=` prefix on each `←` line names where that fire's records went.
+3. A stale enrich: `sentinel session_id mismatch (partial)` warnings around the timestamps.
 
-## Stuck sentinel (can't start new build, "another tab is using Catalyst")
+**Fix**: `end` from the mis-stamped tab removes its row; re-enter the right Mindspace via `list_mindspaces` → `switch_mindspace`.
 
-**Symptom**: PreToolUse refuses every catalyst tool with cross-tab message, but no other tab is open.
+## Stale/wedged registry row
 
-**Check**:
-1. `cat ~/.claude/state/catalyst-active-session.json` — what's the owner? `started_at` time?
-2. Is the owning CC tab still running? If it crashed, the sentinel stayed.
+**Symptom**: a tab's row lingers after its CC tab crashed, or `current_session` reports a Mindspace the tab isn't actually in.
 
-**Fix**: Either:
-- Call `end` or `abandon_build` from ANY tab — both are in `CROSS_TAB_ALLOWED_BARE`, and PreToolUse unlinks the sentinel BEFORE the call goes through.
-- Or manually: `rm ~/.claude/state/catalyst-active-session.json` (sentinel itself) and `rm ~/.claude/state/catalyst-events-jwt.json` (JWT bound to sentinel lifecycle).
+**Check**: dump the rows (recipe above) — `last_updated_dt` tells you how stale each is.
+
+**Fix**:
+- From that tab (or any new tab you want clean): `end` / `abandon_build` — removes the CALLING tab's row before the call goes through. Note this only frees the caller's own row.
+- Rows from crashed tabs age out on their own: the GC drops anything idle >10 days on the next registry save.
+- Nuclear: `rm ~/.claude/state/catalyst-active-session.json` — but this now wipes **EVERY tab's session**, not one; only when nothing else is active. The events_jwt is identity-scoped — leave it unless you're switching users (`logout` handles that).
 
 ## 401 from `/api/events/record`
 
 **Symptom**: `catalyst-event-sink.log` shows `events_jwt rejected by backend (401)`. ChatPane goes silent mid-build.
 
 **Check**:
-1. Compare `catalyst-events-jwt.json`'s `session_id` with the path session_id in the log line. Mismatch → stale JWT from previous build.
-2. Compare `exp` field with current time. If past, defense-in-depth should have skipped before the 401 — check that path didn't break.
+1. Compare the file's `exp` field with current time. If past, defense-in-depth should have skipped before the 401 — check that path didn't break. (The JWT is identity-only — there's no session_id in the file to mismatch; the server checks that this identity OWNS the path session_id.)
+2. Does the identity own the session? A 403/401 with an ownership detail means the row's `session_id` belongs to another user's Mindspace.
 3. Did the backend rotate signing keys? Look at the backend's events JWT route for recent restarts.
 
-**Fix**: 401 on a fresh JWT means backend-side problem (check backend logs). 401 on a stale JWT means the sentinel didn't get rewritten on coding entry — the next `send_message` will mint a fresh one and recover.
+**Fix**: 401 on a fresh JWT means backend-side problem (check backend logs). 401 on a stale JWT self-heals — the next `ensure_auth`/`health_check` from ANY tab mints a fresh one.
 
 ## Hook doesn't fire at all
 
