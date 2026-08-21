@@ -40,7 +40,7 @@ You never check the mode yourself. A blocked tool's error names the transition t
 
 | Tool | Purpose |
 |---|---|
-| `save_prd` | Write the agreed plan to the PRD (`.agent/prd.md` + a `PRD/` copy). **Allowed for the PM & Engineer; denied for the Analyst.** The Engineer reads it back via `get_prd`. |
+| `save_prd` | Write a build-ready PRD (`.agent/prd.md` + a `PRD/` copy — multiple PRDs accumulate in `PRD/`). **Allowed for the PM & Engineer; denied for the Analyst.** Each PRD names its builder: the company's **human engineers** (the PM pushes its tasks to their project-management tool, Mindspace id on every ticket) or the **Hive's Engineer** (`get_prd` reads it back). |
 | `todo_write` | Plan a multi-step change visibly (`.agent/todo.json`; the wizard UI reads it). Mirror the list to the user in chat — the tool's own return string isn't user-visible. |
 
 ## Make & change — the Engineer (with one Analyst exception, `bash`)

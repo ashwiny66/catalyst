@@ -1,10 +1,16 @@
-# Catalyst — Claude Code plugin
+# Catalyst — the trusted Company Brain, inside Claude Code
 
-Build apps via Catalyst from inside Claude Code. The plugin ships the
-skill, the MCP-server pointer, and the tool-isolation hook. The
-**catalyst backend + MCP server itself you self-host** on your own
-machine; this plugin is the lightweight install that wires Claude Code
-into them.
+[Catalyst](https://buildwithcatalyst.ai) is the only trusted Company
+Brain that knows how your company's work actually gets done. Every
+problem your teams solve becomes a tested, trust-scored, self-improving
+skill — a hive mind for the whole organisation — so your teams stay
+forward-deployed on the next big problem while the Hive's AI Employees
+run business-as-usual autonomously.
+
+This plugin wires Claude Code into Catalyst: it ships the skill, the
+MCP-server pointer, and the tool-isolation hook. The **catalyst backend
++ MCP server itself you self-host** on your own machine; this plugin is
+the lightweight install that connects Claude Code to them.
 
 ## Install
 

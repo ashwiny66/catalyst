@@ -1,7 +1,7 @@
 {
   "name": "catalyst",
-  "version": "0.1.44",
-  "description": "Your enterprise AI team \u2014 an Analyst, a PM, an Engineer, and a Curator that learns from every job so the team gets smarter",
+  "version": "0.1.45",
+  "description": "Your company's hive mind \u2014 a single unified consciousness: every problem your team solves becomes a self-improving skill the whole company can use, while the hive's AI employees run business-as-usual",
   "author": {
     "name": "Catalyst",
     "email": "dev@buildwithcatalyst.com"
