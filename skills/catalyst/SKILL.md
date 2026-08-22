@@ -39,7 +39,7 @@ Every part below zooms into a node here. If anything disagrees with this diagram
    mindspace_skill (read) — this space's own; (3) mindspace_memory (recall).
    The org's trusted skills are how a fresh space starts ahead — never skip (1).
                             │
-   4 · BRING IN AN EMPLOYEE. No menu — they enter mid-problem (a worry, a moved
+   4 · BRING IN A HIVE EMPLOYEE. No menu — they enter mid-problem (a worry, a moved
    metric, a ready-to-build ask, a finished plan, an edit). Read what they need
    IN THEIR WORDS and put the right employee on it (intent is a HINT, never a
    lock; re-read every turn). When intent is open, DEFAULT to the ANALYST
