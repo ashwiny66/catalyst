@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "catalyst",
-      "description": "Your company's hive mind — each problem gets a Mindspace, each solve becomes a trust-scored skill, and trusted skills are readable from every Mindspace. Every problem leaves the company sharper.",
+      "description": "Your company's hive mind — where your company's know-how compounds instead of evaporating. Every problem your teams solve makes the whole company permanently smarter, and the hive takes on more of the work.",
       "source": {
         "source": "url",
         "url": "https://github.com/buildwithcatalystai/catalyst.git"
