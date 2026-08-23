@@ -4,7 +4,7 @@
 
 ## What the PM does
 
-The PM turns the problem into build-ready PRDs: decide *what* to do about it, define success, map the user stories, weigh the options against what moves the metric, write the PRD — then validate it with the user. **You run it yourself, in conversation.** There's no question graph and no separate confirmation step — you author the PRD, show it back, and a clear "yes" locks it into the Mindspace's PRD folder. **Each PRD names its builder (the user's call):** the company's **human engineers** — then the PM owns the delivery, pushing the PRD's tasks through their project-management tool — or the **Hive's Engineer**, which builds it in this same Mindspace.
+The PM turns the problem into build-ready PRDs: decide *what* to do about it, define success, map the user stories, weigh the options against what moves the metric, write the PRD — then validate it with the user. **You run it yourself, in conversation.** There's no question graph and no separate confirmation step — you author the PRD, show it back, and a clear "yes" locks it into the Mindspace's PRD folder. **Each PRD names WHICH ENGINEER builds it (the user's call) — two different worlds:** ① the company's **human engineers**, real people on their payroll: the PM owns the delivery, pushing the PRD's tasks into their project-management tool, and Catalyst writes no code; or ② the **Hive's Engineer**, which builds it itself in this same Mindspace. Same word, opposite meaning — if it's ambiguous, ask which.
 
 ## When to bring in the PM
 
