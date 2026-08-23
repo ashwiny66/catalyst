@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "catalyst",
-      "description": "Your company's hive mind — a single unified consciousness: every problem your team solves becomes a self-improving skill the whole company can use, while the hive's AI employees run business-as-usual.",
+      "description": "Your company's hive mind — each problem gets a Mindspace, each solve becomes a trust-scored skill, and trusted skills are readable from every Mindspace. Every problem leaves the company sharper.",
       "source": {
         "source": "url",
         "url": "https://github.com/buildwithcatalystai/catalyst.git"

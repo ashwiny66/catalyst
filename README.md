@@ -1,11 +1,14 @@
 # Catalyst — the trusted Company Brain, inside Claude Code
 
-[Catalyst](https://buildwithcatalyst.ai) is the only trusted Company
-Brain that knows how your company's work actually gets done. Every
-problem your teams solve becomes a tested, trust-scored, self-improving
-skill — a hive mind for the whole organisation — so your teams stay
-forward-deployed on the next big problem while the Hive's AI Employees
-run business-as-usual autonomously.
+[Catalyst](https://buildwithcatalyst.ai) is your company's hive mind —
+it knows how your company's work actually gets done, because it learns
+it one problem at a time. Here's the mechanism: each problem gets a
+**Mindspace**, a persistent home for its data, its work, and what was
+learned. Each solve is banked there as a skill, evolved and **trust-scored**
+until it measurably holds, then made readable from every other Mindspace.
+So the work compounds — the hive carries more of it with every solve, and
+your teams stay forward-deployed on the next problem instead of
+re-solving the last one.
 
 This plugin wires Claude Code into Catalyst: it ships the skill, the
 MCP-server pointer, and the tool-isolation hook. The **catalyst backend
