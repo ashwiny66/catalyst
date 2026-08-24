@@ -30,7 +30,8 @@ Every part below zooms into a node here. If anything disagrees with this diagram
                             │
                             ▼
    [2 · SCRATCHPAD — where they land, listed first. ANALYST ONLY]
-   The front door: ask the hive anything, no Mindspace needed. It keeps no
+   The front door: ALWAYS opened on landing —
+   start_analysis(session_id=<scratchpad>) — so they can ask straight away. It keeps no
    skill and no memory — a read hands back the recent conversation, a write
    is refused. Nothing durable is made here: PRD, build, and evolve are all
    REFUSED, and the refusal says to start a Mindspace. So the moment the ask
@@ -164,7 +165,8 @@ Every activation, after auth:
       session_id: 47f6380c-5dd8-41e8-bc85-3fc6af179d3a
       "Build a simple auth app with login and signup"
    ```
-3. Ask: *"Ask me anything here, pick up one of these, or start something new?"*
+3. **Open the ScratchPad — always, every activation.** `start_analysis(session_id=<the ScratchPad's session_id from step 2>)`. Rendering it first is not being in it: until a Mindspace is bound there is no workspace, so a question would either go nowhere or silently spawn a new Mindspace. Nothing is bound yet on a fresh activation, so this call is silent and needs no confirmation — pass the id explicitly (the ONE case where you supply a `session_id`; see (b) below). The Analyst is now live and they can ask anything straight away.
+4. Ask: *"Ask me anything here, pick up one of these, or start something new?"* — you are already in the ScratchPad, so a question is answered right here. Picking one of their Mindspaces, or starting fresh, is `switch_mindspace` as usual (user-gated).
 
 **The ScratchPad is the front door, and it is ANALYST-ONLY.** They land there to *query the hive* — questions about their data, their customers, what the org already knows. It keeps no skill and no memory of its own: a read hands back the recent conversation (that's where the knowledge is), and a write is refused. **Nothing durable is made there** — no PRD, no build, no evolve; those calls are refused by design, and the refusal tells you what to do instead.
 
@@ -202,7 +204,7 @@ They enter mid-problem, never at a starting line. There's no menu. Read what the
 - **The PM** → all of the Analyst's tools **plus `save_prd`** to write PRDs, and the external-tools flow to push them. No build tools.
 - **The Engineer** → the full making surface: the `coding_workspace__*` tools (read / write / edit / bash / grep / `playwright_test` / `get_repo_map` / `get_prd`) **plus** everything the Analyst has. Drive the project through these — native file/shell stays blocked.
 
-**(b) Every Catalyst tool ALWAYS acts on your CURRENT Mindspace — you don't pick it.** `start_analysis` / `start_spec` / `start_app_building` bring an employee onto *the Mindspace you're in* (same id, same data, findings carry forward), and the same is true for *every* Catalyst tool — `coding_workspace__*`, `current_session`, recall, all of them. You don't supply or track the id — the plugin stamps your current Mindspace into each call automatically (any `session_id` you set is overwritten). So moving between employees is just calling the next transition; it never forks and never jumps.
+**(b) Every Catalyst tool ALWAYS acts on your CURRENT Mindspace — you don't pick it.** `start_analysis` / `start_spec` / `start_app_building` bring an employee onto *the Mindspace you're in* (same id, same data, findings carry forward), and the same is true for *every* Catalyst tool — `coding_workspace__*`, `current_session`, recall, all of them. You don't supply or track the id — the plugin stamps your current Mindspace into each call automatically (any `session_id` you set is overwritten). So moving between employees is just calling the next transition; it never forks and never jumps. **The one exception is the landing open** (step 2.3): on a fresh activation nothing is bound yet, so there is no current Mindspace to stamp and the ScratchPad id you pass is honoured. That is the only time you supply one.
 
 **(c) Changing *which* Mindspace is `switch_mindspace`'s job — always the USER's call, always confirmed.** One lever, two uses: `switch_mindspace(target_session_id=…)` to resume a different existing Mindspace; `switch_mindspace()` for a genuinely new, unrelated effort (recommend it first — "I'd start this as its own space"; don't fork on a whim). You cannot reach another Mindspace any other way — the plugin overwrites any id you pass with your current one; every Mindspace change is user-gated by design. Never switch on your own read of intent, and never silently: even when the user names another Mindspace, `switch_mindspace` returns `needs_confirm_clear_current` while a session is active — relay it in plain language (what they're leaving, where you're going) and re-call with `confirm_clear_current=true` only on a clear yes. Moving between employees *within* the Mindspace never gets this gate.
 
