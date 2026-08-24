@@ -157,13 +157,14 @@ Then one blank line, the warm greeting, and straight to the listing. Don't resta
 Every activation, after auth:
 
 1. `health_check` — silent. If `ready_to_build: false`, read `fix_required` to the user and stop.
-2. `list_mindspaces` — render with **full session_ids** (never truncated), one stanza each. The **ScratchPad** (`is_scratchpad: true`) is always first — that's where they land. Render each other entry's phase as **who's on it** — `deep_analysis`→**Analyst**, `spec`/`brainstorm`→**PM**, `coding`/`generate`→**Engineer**, `completed`→**Shipped** (you map the status to the employee; never show the raw stage word):
+2. `list_mindspaces` — **render at most FIVE: the ScratchPad plus their 4 most recently used** (highest `updated_at`, falling back to `created_at`). Never dump the whole list — it buries the ask. If more exist, close with one line: `+N more — say the word and I'll list them` (list them all only if they ask). Render with **full session_ids** (never truncated), one stanza each. The **ScratchPad** (`is_scratchpad: true`) is always first — that's where they land. Render each other entry's phase as **who's on it** — `deep_analysis`→**Analyst**, `spec`/`brainstorm`→**PM**, `coding`/`generate`→**Engineer**, `completed`→**Shipped** (you map the status to the employee; never show the raw stage word):
    ```
    1. ScratchPad — ask the hive anything
       session_id: 9f21c0aa-77d2-4f0e-b3c1-0ce4a91d55b7
    2. Simple Auth — PM
       session_id: 47f6380c-5dd8-41e8-bc85-3fc6af179d3a
       "Build a simple auth app with login and signup"
+   +6 more — say the word and I'll list them
    ```
 3. **Open the ScratchPad — always, every activation.** `start_analysis(session_id=<the ScratchPad's session_id from step 2>)`. Rendering it first is not being in it: until a Mindspace is bound there is no workspace, so a question would either go nowhere or silently spawn a new Mindspace. Nothing is bound yet on a fresh activation, so this call is silent and needs no confirmation — pass the id explicitly (the ONE case where you supply a `session_id`; see (b) below). The Analyst is now live and they can ask anything straight away.
 4. Ask: *"Ask me anything here, pick up one of these, or start something new?"* — you are already in the ScratchPad, so a question is answered right here. Picking one of their Mindspaces, or starting fresh, is `switch_mindspace` as usual (user-gated).
