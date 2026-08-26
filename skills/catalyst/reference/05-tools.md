@@ -62,7 +62,7 @@ The making surface also carries the automation families (one executable protocol
 |---|---|
 | Jobs (non-AI shell/http) | `create_job_scaffold`, `edit_job`, `delete_job`, `list_jobs`, `run_job` |
 | Schedules (the cron registry) | `add_schedule`, `edit_schedule`, `delete_schedule`, `list_schedules` |
-| Triggers (webhook/manual → fan out) | `create_trigger`, `edit_trigger`, `delete_trigger`, `list_triggers`, `fire_trigger` |
+| Triggers (webhook/manual → fan out; `?wait=1` returns an AI Employee's answer; every org has `ask-the-hive` → the Hive Analyst) | `create_trigger`, `edit_trigger`, `delete_trigger`, `list_triggers`, `fire_trigger` |
 | Subagents (autonomous AI checks) | `create_subagent_scaffold`, `edit_subagent`, `delete_subagent`, `list_subagents`, `run_subagent` |
 | Connected external tools | `external_tools_discover`, `external_tools_execute` |
 
