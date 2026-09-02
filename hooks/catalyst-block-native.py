@@ -34,8 +34,10 @@ Responsibilities, in order:
    OPEN** (the pre-2026-06-09 behaviour, restored on user request) so those
    employees can read/inspect files on the user's own machine. See
    ``_WORKSPACE_BOUND_MODES``. ALLOW_EXACT (``Agent``, plan mode, ``TodoWrite``,
-   and native WEB ``WebFetch``/``WebSearch``) is never touched — **native web
-   access is allowed in every mode incl. Build** (read-only network, no FS hazard).
+   native WEB ``WebFetch``/``WebSearch``, and non-FS client tools such as
+   ``SendFeedback``) is never touched — **native web access is allowed in every
+   mode incl. Build** (read-only network, no FS hazard). The rule of thumb: if a
+   tool cannot write a file, it has no reason to be blocked.
    ONE further carve-out even inside Build: native ``Bash`` running the Catalyst
    file-transfer curl (``upload_to_workspace`` / ``download_from_workspace`` —
    bytes between the user's LOCAL disk and the workspace over HTTPS) IS permitted
@@ -147,6 +149,15 @@ ALLOW_EXACT = {
     # through coding_workspace__web_search. Moved OUT of REDIRECTS into here.
     "WebFetch",
     "WebSearch",
+    # Non-filesystem client tools (2026-09-02). The block exists to stop native
+    # edits landing on the laptop instead of the workspace — these write no
+    # files at all, so blocking them only produced dead ends. SendFeedback in
+    # particular was blocked while an agent tried to REPORT a stuck evolve run,
+    # and the refusal told it to `abandon_build` — destroying the run it was
+    # reporting on.
+    "SendFeedback",
+    "KillShell",
+    "BashOutput",
 }
 
 
@@ -530,9 +541,10 @@ def main() -> int:
         f"already has loaded) — it routes to the correct workspace "
         f"automatically. To pull a file off the user's laptop into the build, "
         f"call `upload_to_workspace` and run the curl it returns.\n\n"
-        f"Native tools are open for the Analyst / PM / Curator. To unlock them "
-        f"here too, end the Catalyst session first (`abandon_build` / "
-        f"`current_session`)."
+        f"If you need native tools right now, switch to the Analyst — "
+        f"`start_analysis` — where every native tool is open, and come back to "
+        f"Build after. Do NOT call `abandon_build` for this: it marks the "
+        f"Mindspace abandoned and throws away the build you are in."
     )
     return _emit_deny(reason)
 
