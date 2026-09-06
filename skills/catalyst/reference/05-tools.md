@@ -40,7 +40,7 @@ You never check the mode yourself. A blocked tool's error names the transition t
 
 | Tool | Purpose |
 |---|---|
-| `save_prd` | Write a build-ready PRD (`.agent/prd.md` + a `PRD/` copy — multiple PRDs accumulate in `PRD/`). **Allowed for the PM & Engineer; denied for the Analyst.** Each saved PRD lands on the companion's list as a `prd` follow-up; the PM then tracks its tasks on the ledger (`todos`), and the Engineer reads it back with `get_prd` when asked to build. |
+| `save_prd` | Write a build-ready PRD into the Mindspace's `PRD/` folder — the only home; multiple accumulate, the slug comes from the title, re-saving a name updates it. **Allowed for the PM & Engineer; denied for the Analyst.** Each saved PRD lands on the companion's list as one `prd` task, and the return carries the org's tracker convention + the Mindspace/PRD ids to stamp; the Engineer reads the newest back with `get_prd` when asked to build. |
 | `todo_write` | Plan a multi-step change visibly (`.agent/todo.json`; the wizard UI reads it). Mirror the list to the user in chat — the tool's own return string isn't user-visible. |
 
 ## Make & change — the Engineer (with one Analyst exception, `bash`)
