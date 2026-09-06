@@ -1,7 +1,7 @@
 {
   "name": "catalyst",
-  "version": "0.1.51",
-  "description": "Your company's hive mind \u2014 where your company's know-how compounds instead of evaporating. Every problem your teams solve makes the whole company permanently smarter, and the hive takes on more of the work",
+  "version": "0.1.53",
+  "description": "An AI Wingman for every team member, inside Catalyst — the Enterprise AI Workspace. It analyses with the Company Brain, solves the problem and drives the solve to done, builds the tools, learns how you work, automates what repeats, and teaches what held back to the company — so every teammate gets better, and they collaborate across each other's expertise to do real work.",
   "author": {
     "name": "Catalyst",
     "email": "dev@buildwithcatalyst.com"

@@ -4,6 +4,7 @@
 
 | Symptom | What to do |
 |---|---|
+| `open_scratchpad` returns `status: error` | Read its `fix_required` to the user. Then `health_check` for the detail (backend down / database unreachable) and follow the row that matches. |
 | `health_check` returns `backend_up: false` | Tell the user: "Catalyst isn't running on your machine. Start it with `./start.sh` in the catalyst-builder folder, then say 'continue'." |
 | Native tools (Read / Edit / Bash / Write / Grep / etc.) are blocked with "use coding_workspace__*" | Expected — a session is live (the Engineer's on it). Use the redirect target the hook names. If the user genuinely needs native tools (they're editing local config, not the project), call `abandon_build` first to clear the session marker. |
 | `coding_workspace__*` returns "no active build session" / "no bound tools" | The session marker dropped (e.g. Catalyst restarted). `current_session` — if it still shows the Mindspace, `start_app_building` re-binds your current one. If not, `list_mindspaces` → `switch_mindspace(target_session_id=<picked>)` to re-activate it, then `start_app_building` / `start_spec` continue it. |

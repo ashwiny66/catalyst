@@ -1,8 +1,10 @@
 # Bootstrap & required state
 
-> **Read this when:** the user wants to build something but `health_check` came back with a failed precondition, or you need to recover from a partially-set-up account.
+> **Read this when:** `open_scratchpad` returned `status: error`, `health_check` came back with a failed precondition, or you need to recover from a partially-set-up account.
 
 ## What `health_check` tells you
+
+`health_check` is a diagnostic, not a landing step — `/catalyst` lands through `open_scratchpad` alone (its success already proves the backend and database are up). Run `health_check` when that call errors, or when a tool later fails in a way that smells like setup.
 
 It returns a small status block. Two fields decide whether you can proceed:
 

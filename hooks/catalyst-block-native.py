@@ -33,7 +33,7 @@ Responsibilities, in order:
    (deep_analysis), the PM (brainstorm), the Curator, and menu — native tools are
    OPEN** (the pre-2026-06-09 behaviour, restored on user request) so those
    employees can read/inspect files on the user's own machine. See
-   ``_WORKSPACE_BOUND_MODES``. ALLOW_EXACT (``Agent``, plan mode, ``TodoWrite``,
+   ``_WORKSPACE_BOUND_MODES``. ALLOW_EXACT (``Agent``, ``TodoWrite``,
    native WEB ``WebFetch``/``WebSearch``, and non-FS client tools such as
    ``SendFeedback``) is never touched — **native web access is allowed in every
    mode incl. Build** (read-only network, no FS hazard). The rule of thumb: if a
@@ -134,12 +134,14 @@ ALLOW_EXACT = {
     "Skill",
     "SlashCommand",
     "ToolSearch",
-    "ExitPlanMode",
-    "EnterPlanMode",
-    # The native Agent (Task) tool + plan mode — Claude's & Codex's own sub-tasking
-    # and planning. This is the sanctioned way for an agent to fan out / parallelize
-    # its work; creating a Mindspace SUBAGENT for that is forbidden (subagents are
-    # user-request-only). NOTE: a spawned native subagent runs under the parent's
+    # The native Agent (Task) tool — Claude's & Codex's own sub-tasking. This is the
+    # sanctioned way for an agent to fan out / parallelize its work; creating a
+    # Mindspace SUBAGENT for that is forbidden (subagents are user-request-only).
+    # Plan mode (EnterPlanMode/ExitPlanMode) is NOT here any more (2026-09-06,
+    # v0.1.53): it is denied while a Catalyst session is live — see
+    # _PLAN_MODE_TOOLS. The PM shapes the PRD in conversation (save_prd) and puts
+    # its tasks on the shared ledger (todos); there is nothing for plan mode to do.
+    # NOTE: a spawned native subagent runs under the parent's
     # cc_session_id, so its OWN native FS/shell calls are still governed by this block
     # while a build is active — it should drive the project via coding_workspace__*.
     "Agent",
@@ -172,8 +174,8 @@ ALLOW_EXACT = {
 #   spec          (Spec)     → shape the plan: no build actions; save_prd allowed.
 #   coding/vibe   (Build)    → nothing denied (full surface).
 # These open/close as the agent calls start_analysis / start_spec /
-# start_app_building. (Agent + Enter/ExitPlanMode are native ALLOW_EXACT — never
-# touched by this gate, so they stay available in every mode incl. Discover.)
+# start_app_building. (Agent is native ALLOW_EXACT — never touched by this gate, so it
+# stays available in every mode incl. Discover; plan mode is denied in Case 2.)
 _CODING_WS_MARKER = "coding_workspace__"
 _DENIED_BY_MODE = {
     "deep_analysis": {"write", "edit", "playwright_test", "save_prd"},
@@ -188,6 +190,12 @@ _DENIED_BY_MODE = {
 # user's local files (restored 2026-07-23; the pre-2026-06-09 behaviour). Native web
 # (WebFetch/WebSearch) + the upload/download transfer curl stay allowed in ALL modes.
 _WORKSPACE_BOUND_MODES = {"coding", "vibe_code"}
+
+# Claude Code's native plan mode. Denied while this tab has a Catalyst row (any
+# mode): the Wingman has ONE planning artefact — the PRD the PM shapes in
+# conversation — and one tracker — the shared ToDo ledger. A plan-mode detour
+# would park the session behind Claude Code's own approve-the-plan gate instead.
+_PLAN_MODE_TOOLS = {"EnterPlanMode", "ExitPlanMode"}
 
 # Session routing is CLIENT-SIDE. The remote MCP server holds NO active-session
 # state (on a shared host that would be another user's), so this hook stamps the
@@ -214,6 +222,13 @@ _WORKSPACE_BOUND_MODES = {"coding", "vibe_code"}
 #       server abandons the caller's build (handle_abandon_build reads args).
 _NO_SESSION_BARE = {
     "health_check", "ensure_auth", "logout", "list_mindspaces", "list_projects",
+    # open_scratchpad — the `/catalyst` landing call. Takes NO args: the server
+    # resolves the caller's ScratchPad itself, and its response is a FULL entry
+    # (mode=deep_analysis + sid + app_root + gen_stream_id) that PostToolUse
+    # binds this tab to — even if another Mindspace was active (re-running
+    # `/catalyst` = go home to the ScratchPad; non-destructive, that Mindspace
+    # is one switch_mindspace away).
+    "open_scratchpad",
 }
 
 # The stage-transition / enter verbs. These are the RESUME-or-enter calls — the
@@ -307,7 +322,8 @@ def _bare_catalyst_tool(tool_name: str) -> str:
 def _is_allowed_for_owner(tool_name: str) -> bool:
     """Strict allow-list while a Catalyst session is active — mirrors FDE, whose
     agent only ever has the Catalyst surface. ONLY catalyst-mcp tools + the
-    native plumbing in ALLOW_EXACT (Agent, plan mode, TodoWrite, …) pass here.
+    native plumbing in ALLOW_EXACT (Agent, TodoWrite, …) pass here. Plan mode is
+    denied in Case 2 (_PLAN_MODE_TOOLS).
     External MCP servers (loadshare, Slack, Notion, …) are NOT allowed — they're
     handled (denied) in Case 2. (Native Bash in Discover is also handled there.)
     """
@@ -490,6 +506,15 @@ def main() -> int:
         )
         _debug_log(f"  → ALLOW {bare_name} + inject session_id={stamped[:8] or '(fresh)'} [{_src}]")
         return _emit_allow_updated_input(tool_input)
+    # ── Plan mode is not part of a Catalyst session (2026-09-06) ────────
+    if tool_name in _PLAN_MODE_TOOLS:
+        _debug_log(f"  → DENY {tool_name} (plan mode; Catalyst session live)")
+        return _emit_deny(
+            f"`{tool_name}` is off while a Catalyst session is live — plan mode isn't part "
+            "of the Wingman's flow. The PM shapes the PRD in conversation and saves it "
+            "with `save_prd`; its tasks go on the shared ledger with `todos`; the "
+            "Engineer builds from it. Carry on without plan mode."
+        )
     if _is_allowed_for_owner(tool_name):
         return 0
     # ── Native tools OPEN outside Build (Analyst / PM / Curator / menu) ──
@@ -514,7 +539,7 @@ def main() -> int:
     # NOTE: reaching here means mode ∈ Build (coding/vibe_code) — native FS/shell
     # in Analyst/PM/Curator/menu already returned ALLOW above. The transfer curl
     # carve-out just above still fires in Build so a build can pull local files.
-    # (Agent + Enter/ExitPlanMode stay always-allowed via ALLOW_EXACT.)
+    # (Agent stays always-allowed via ALLOW_EXACT; plan mode is denied above.)
     # External MCP server (any mcp__* that isn't catalyst-mcp — those passed
     # _is_allowed_for_owner above). BLACKLISTED while a Catalyst session is
     # active: Catalyst is a strict allow-list (Catalyst tools + native

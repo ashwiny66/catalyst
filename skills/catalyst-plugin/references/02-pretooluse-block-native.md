@@ -37,7 +37,7 @@ registry.touch(cc)   ← keeps the row warm for the 10-day GC (throttled 60s)
 Case 2: this tab's session gate (every tab is "owner" of its own row)
      coding_workspace__* tool denied in this mode? → deny            (_DENIED_BY_MODE: Discover/Spec narrow the surface)
      catalyst-mcp tool?  → inject THIS ROW's session_id, allow
-     tool in ALLOW_EXACT (incl. Agent, plan mode)? → allow
+     tool in ALLOW_EXACT (incl. Agent)? → allow  ·  plan mode (EnterPlanMode/ExitPlanMode)? → deny (2026-09-06)
      native FS/shell outside Build (mode ∉ {coding,vibe_code})? → allow
      native Bash running the upload/download curl? → allow           (transfer carve-out — local↔workspace, plugin only)
      external MCP (mcp__* not catalyst)? → deny (strict allow-list)
@@ -70,7 +70,7 @@ Always allowed for a registered tab, even during build — incl. native WEB (no 
 ```python
 ALLOW_EXACT = {"TodoWrite", "AskUserQuestion", "Skill",
                "SlashCommand", "ToolSearch",
-               "ExitPlanMode", "EnterPlanMode", "Agent",
+               "Agent",
                "WebFetch", "WebSearch"}
 ```
 

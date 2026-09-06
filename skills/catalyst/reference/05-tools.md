@@ -14,7 +14,7 @@ All three employees — the Analyst, the PM, the Engineer — work the **same** 
 
 You never check the mode yourself. A blocked tool's error names the transition to call (`start_app_building` to bring in the Engineer, etc.). The transitions (`start_analysis` / `start_spec` / `start_app_building`) open and close these sets — see [00-flow-and-tools.md](00-flow-and-tools.md).
 
-**Native host tools** are mostly OFF while any session is live — `Read`/`Write`/`Edit`/`Bash`/`Grep`/`Glob`/`WebFetch`/`WebSearch` are redirected to their `coding_workspace__*` equivalent whoever's on it. Carve-outs available for **every** employee including the Analyst: native **`Agent`** (parallel sub-tasking) and **`EnterPlanMode`/`ExitPlanMode`** (plus `TodoWrite`/`AskUserQuestion`/`Skill`/`SlashCommand`/`ToolSearch`). Note `coding_workspace__bash` is open for **the Analyst** too (so the working plan persists in the Mindspace) — native `Bash` just routes there; there's no laptop-local shell carve-out.
+**Native host tools** are mostly OFF while any session is live — `Read`/`Write`/`Edit`/`Bash`/`Grep`/`Glob`/`WebFetch`/`WebSearch` are redirected to their `coding_workspace__*` equivalent whoever's on it. Carve-outs available for **every** employee including the Analyst: native **`Agent`** (parallel sub-tasking) plus `TodoWrite`/`AskUserQuestion`/`Skill`/`SlashCommand`/`ToolSearch`. Plan mode (`EnterPlanMode`/`ExitPlanMode`) is **blocked** while a session is live — the PM shapes the PRD in conversation and tracks its tasks on the ledger; there is nothing for plan mode to do. Note `coding_workspace__bash` is open for **the Analyst** too (so the working plan persists in the Mindspace) — native `Bash` just routes there; there's no laptop-local shell carve-out.
 
 **External MCP servers are blacklisted** while a Catalyst session is active — a connected Redshift / Slack / Notion MCP is denied with a redirect. Strict allow-list: only the Catalyst surface + the few native tools above. Do the work with the Catalyst tools.
 
@@ -40,7 +40,7 @@ You never check the mode yourself. A blocked tool's error names the transition t
 
 | Tool | Purpose |
 |---|---|
-| `save_prd` | Write a build-ready PRD (`.agent/prd.md` + a `PRD/` copy — multiple PRDs accumulate in `PRD/`). **Allowed for the PM & Engineer; denied for the Analyst.** Each PRD names its builder: the company's **human engineers** (the PM pushes its tasks to their project-management tool, Mindspace id on every ticket) or the **Hive's Engineer** (`get_prd` reads it back). |
+| `save_prd` | Write a build-ready PRD (`.agent/prd.md` + a `PRD/` copy — multiple PRDs accumulate in `PRD/`). **Allowed for the PM & Engineer; denied for the Analyst.** Each saved PRD lands on the companion's list as a `prd` follow-up; the PM then tracks its tasks on the ledger (`todos`), and the Engineer reads it back with `get_prd` when asked to build. |
 | `todo_write` | Plan a multi-step change visibly (`.agent/todo.json`; the wizard UI reads it). Mirror the list to the user in chat — the tool's own return string isn't user-visible. |
 
 ## Make & change — the Engineer (with one Analyst exception, `bash`)

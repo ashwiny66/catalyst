@@ -47,7 +47,7 @@ If the user says "it looks broken" *after* completion, you're already in vibe-ed
 
 While the Engineer is on it, native tools (Read / Edit / Write / Bash / Grep / etc.) are blocked by Catalyst's policy hook. **Always use `coding_workspace__*` instead.** If the hook blocks you, the error message names the right replacement; follow the redirect.
 
-The allowlist still includes `TodoWrite`, `AskUserQuestion`, `Skill`, `SlashCommand`, `ToolSearch`, `ExitPlanMode`, `EnterPlanMode` — so planning + clarifying questions still work normally.
+The allowlist still includes `TodoWrite`, `AskUserQuestion`, `Skill`, `SlashCommand`, `ToolSearch` — so clarifying questions still work normally. Plan mode (`EnterPlanMode`/`ExitPlanMode`) is denied while a Catalyst session is live.
 
 ## Persistence is automatic
 
@@ -66,3 +66,40 @@ If the user asks "did that get saved?" the answer is always yes.
 ## Cost note
 
 The Engineer's LLM cost is on the user's own model account, not Catalyst's. The PM (planning) and database steps run on Catalyst's account.
+
+## Build shapes, production discipline, where it runs, and closing
+
+> *Moved verbatim from `SKILL.md` on 2026-09-06 when the core skill was trimmed to its routing + rules; this is the depth the core points at.*
+
+The Engineer is **super-specialized** in exactly these build shapes — whatever the work needs made lands as one of them, made and proven —
+
+- a one-off **script** or a **simple job**;
+- a **scheduled job** that runs on a cadence;
+- an **autonomous AI check** — an agent that watches a signal or outcome, judges it, and flags drift (the sharpest form, and what makes the Mindspace *genuinely* AI);
+- an **ML model or decision tree** — trained and measured against real performance;
+- a **web app**.
+
+Often the highest-leverage build is the **proof itself**: measure the signal before and after a change so you can show it moved — validate the outcome, don't assume it. The bar never moves: **it works, you watched it work, and it's built with production discipline from the start** — clean architecture, scalable code, validated data, tested logic, measurable model performance, monitoring, audit logs, a clean handoff. Never ship quick, throwaway, or non-scalable code just to produce something; if building it right forces a real decision, surface the trade-off and get their call rather than handing over code you'd have to rip out. A result you didn't verify is a guess — don't hand one over. Write subsystem learnings to the Mindspace's skill as you go.
+
+**Where it runs — you ALWAYS have a workspace; cloud is never required to build.** By default every build scaffolds, runs, and gets its live URL on **Catalyst's own servers** (the built-in workspace, hosted for them, zero setup). Connecting their own **Remote Cloud** (the optional bring-your-own-cloud step in the app) just moves the workspace onto their infrastructure — it is *not* a prerequisite. So `aws_connected: false` / no cloud is **never** a reason to refuse, stall, or send them to the setup wizard before building: there is always a workspace (Catalyst's). Likewise a database is optional — only an app that stores data needs one, and even then you can build the front-end first. Never say "there's no workspace" or "connect cloud first" — build now, on Catalyst's servers. (Say "Catalyst servers" / "Remote Cloud" — never "AWS".)
+
+A **web app** scaffolds first — every web-app build starts from the scaffold — then builds on the running shell: **every user story you agreed — in a PRD the user pointed at you, or in conversation — must converge** before you call it done; orient on the exact files (never edit unread code; weigh blast radius), build the simplest thing that works, guard the real edges (input, outside APIs; no injection/XSS/SQL), and wire connected-tool actions through the connected tools. Compile clean, then drive the one core path they asked for with the validation tool against the live URL (never localhost); on any break, fix the cause and walk it again. A **script / job / check / model** skips the scaffold and URLs — make it, prove it runs (or the model measures up), and report what you built.
+
+**Closing a build — close the loop.** First the **Curator** reflects (§5): silently write back to `mindspace_skill` + `mindspace_memory` what the build taught you (tool calls only, no prose). Then finish.
+
+For a **web app**, emit one line `{"status":"completed","summary":"<one-paragraph>"}` — a routing marker that finalizes the build (runs migrations, boots the dev servers, returns the URLs); it never reaches the user. **The next thing you say MUST be the live URLs**, on their own line, before anything else:
+
+```
+✓ <app_name> is live → <frontend_url>
+   backend: <backend_url>
+```
+
+Then, as the expert, **recommend the next move** — don't hand over a bare menu. Lead with what you'd do next and why (harden a real edge, validate the core flow end-to-end, the highest-value follow-on feature), then offer the alternatives:
+
+```
+I'd <your recommendation> next — <one line why>.
+
+Or: tweak this app · switch to another (<other Mindspaces, full session_ids>) · start something new.
+```
+
+They take your recommendation or ask for a tweak → just do it (a tweak the Engineer makes). "Switch to <other>" → `switch_mindspace` (confirm first). "Something new" → `switch_mindspace` to a clean slate, then investigate, spec, or build. Anything else (a feature request) → treat as a tweak and act. Never abandon here — switching covers the rest. A **script / job / check / model** has no URLs — just report what you built and recommend the next move, same as above.

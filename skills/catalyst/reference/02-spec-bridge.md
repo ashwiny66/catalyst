@@ -4,7 +4,7 @@
 
 ## What the PM does
 
-The PM turns the problem into build-ready PRDs: decide *what* to do about it, define success, map the user stories, weigh the options against what moves the metric, write the PRD — then validate it with the user. **You run it yourself, in conversation.** There's no question graph and no separate confirmation step — you author the PRD, show it back, and a clear "yes" locks it into the Mindspace's PRD folder. **Each PRD names WHICH ENGINEER builds it (the user's call) — two different worlds:** ① the company's **human engineers**, real people on their payroll: the PM owns the delivery, pushing the PRD's tasks into their project-management tool, and Catalyst writes no code; or ② the **Hive's Engineer**, which builds it itself in this same Mindspace. Same word, opposite meaning — if it's ambiguous, ask which.
+The PM turns the problem into build-ready PRDs: decide *what* to do about it, define success, map the user stories, weigh the options against what moves the metric, write the PRD — then validate it with the user. **You run it yourself, in conversation.** There's no question graph and no separate confirmation step — you author the PRD, show it back, and a clear "yes" locks it into the Mindspace's PRD folder. **Each saved PRD lands on your companion's list as a `prd` follow-up; the PM then program-manages it to done on the shared ledger** (one `todos` task per breakdown row, people by name), and the Engineer builds from it whenever your companion asks for a piece to be made.
 
 ## When to bring in the PM
 
@@ -21,8 +21,8 @@ Work the Hive builds from a clear ask needs no PRD. If you're unsure, ask one fr
 2. **One clarifier at a time, in their language.** Not a form, not a six-part questionnaire. Ask the smallest thing that unblocks the next decision; when it's clear, stop asking.
 3. **Ground every PRD in what already exists.** The shape of their data, the systems/APIs they run, the tools they've connected — a PRD that knows which data is real and which endpoints to reach lets their engineers execute instead of guessing. Pull that context in and fold it into the PRD (and nudge them that you can).
 4. **Define success in their terms** — what moves the metric, what "done" looks like, not implementation detail.
-5. **Show the PRD back as-is and get a clear yes.** Render it plainly; don't bury it. The PRD is a contract — what they approve is what their engineers receive.
-6. **Lock and route.** On a yes, save the PRD into the Mindspace's PRD folder (`save_prd`) — then route it where the user aims it: their engineers → the PM pushes the tasks to their project-management tool, Mindspace id on every ticket (see below); the Hive's Engineer → bring it in and it builds from the PRD.
+5. **Show the PRD back as-is and get a clear yes.** Render it plainly; don't bury it. The PRD is a contract — what they approve is what gets built and tracked.
+6. **Lock and track.** On a yes, save the PRD into the Mindspace's PRD folder (`save_prd`) — it lands on your companion's list as a `prd` follow-up by itself. Then create one task per breakdown row on the shared ledger (`todos`, assignee by name, due when given) and program-manage them to done. When your companion wants a piece built now, the Engineer builds it from the PRD in this same Mindspace.
 
 ## Many PRDs, one Mindspace
 
@@ -35,8 +35,18 @@ The PM keeps writing PRDs as the problem unfolds — **multiple PRDs live in the
 - open questions
 - a **task breakdown** a builder can execute from
 
-When the user wants their **own engineers** to build one, push the PRD and its tasks to their connected project-management tool (Jira, Linear, Asana, …) via the external-tools flow — discover the action and its arg schema first, then execute. **Always stamp the Mindspace id (the full session_id) into every ticket and doc you push** — in the description or a footer — so a human software engineer can come back to this Mindspace later and ask questions with full context. The Mindspace stays the source of truth behind the tickets.
+Every PRD's tasks live on the shared ledger (`todos`), Mindspace attached, people addressed by name — so anyone picking up a task can come back to this Mindspace with full context. The Mindspace stays the source of truth behind every task; pushing to an external tracker is a later adapter.
 
-## What carries to the builder
+## What carries forward
 
-**Human engineers:** the PRD's tasks land in the user's project-management tool, each stamped with the Mindspace id — the Mindspace stays the source of truth a human engineer can return to with questions, so keep its skill + memory sharp as you spec. **The Hive's Engineer:** it reads the PRD back (`get_prd`) and every user story in it must converge before its build is done. Either way, fold the Analyst's headline facts (validated numbers, root causes) into the PRD itself, not just the chat.
+The Engineer reads the PRD back (`get_prd`) and every user story in it must converge before its build is done; the ledger's tasks carry the status of everything else. Fold the Analyst's headline facts (validated numbers, root causes) into the PRD itself, not just the chat, and keep the Mindspace's skill + memory sharp as you spec.
+
+## The house PRD shape, and program-managing to done
+
+> *Moved verbatim from `SKILL.md` on 2026-09-06 when the core skill was trimmed to its routing + rules; this is the depth the core points at.*
+
+Bring in the PM to decide what to do about the problem and write it up so whoever picks it up can run with it — a PRD is worth writing when the problem needs a real spec (a clear ask the Engineer can build from needs none), and it has to stand on its own. You run it **in conversation** — the smallest clarifier at a time, in their language, never a form; shape the answers into the PRD; show it back as-is and get a clear yes, then save it (`save_prd` — write as many as the problem needs into the Mindspace's PRD folder, one per feature, option, or work stream). Hold every PRD to the company's house shape: an **Owner**; **Overview** (the business lever + numbered benefits); **Success Metrics** (numbered, measurable); **Background / Context**; **Goal**; **In Scope by release** (v0/v1/v2, each with a closure date) and **Out of Scope** (define any portal or term a reader may not know); **User Stories grouped by persona** — the company's REAL roles (a City Head, a Fleet Manager, a Rider — never 'user'/'admin'), each story first-person with its release tag and its "so that"; a **Requirements table** (# · Requirement · Priority P0–P2 · ETA); **Design** expectations; **Technical Considerations**; and a **task breakdown** an engineer can execute from. **Unsure who the personas are? Ask first** — name the cast ("these are the personas this PRD is written for") and let them correct it. A PRD is a **living document** — post-approval changes land as dated update sections, never silent rewrites — and the Mindspace carries as many PRDs as the solution's evolution needs.
+
+**Then program-manage it to done.** The saved PRD lands on your companion's list as a `prd` follow-up by itself; create one task per breakdown row on the shared ledger (`todos` — assignee by name, due date when given), keep status current as work moves, and answer *"where are we on X?"* from `todos list scope=mindspace`. When your companion wants a piece built now, the Engineer builds it from the PRD in this same Mindspace. Detail: `reference/10-ledger.md`.
+
+**Ground every PRD in what the Mindspace already has** — the shape of their data, the systems/APIs they run, the tools they've connected — so it specs against reality instead of guessing (and nudge them that you can). The PRD is a contract — what they approve is what gets built and tracked.
