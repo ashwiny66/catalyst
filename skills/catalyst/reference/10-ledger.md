@@ -38,8 +38,13 @@ Every `answer` or `comment` by one side hands the ball to the other, and every s
 | `close` | `ref`, `outcome` (`done` · `cancelled`), `note` | the requester |
 | `tracker` | the org's project-management tool + how tasks are stored there | anyone |
 | `tracker_set` | save that convention (`app`, `instructions`) after asking your companion | anyone |
+| `subtasks` | `ref` — the tasks this todo is tracked with in the org's project-management tool (key · title · status · link) | anyone |
+| `track` | `ref` + `subtasks=[{key, title, external_id, url, status?, assignee?, due?}]` (+ `app`; default the org's tool) — register the tool's tasks on the todo so they show inside it; re-tracking an `external_id` refreshes it | requester or assignee |
+| `subtask_update` | `ref` + `sub` (key · external_id · id) + `status` (`open` · `in_progress` · `done` · `cancelled`) / `external_status` (the tool's own words) / `url` / `title` — after reading the tool | requester or assignee |
 
 The tool is bound on every surface (Analyst, PM, Engineer; ScratchPad and Mindspace). In the **ScratchPad** `mindspace=current` means *none* — rows land unclassified; move to a Mindspace to classify.
+
+**Any row can carry subtasks** — the tasks it is tracked with in the org's project-management tool: a PRD's requirement rows, or a request that becomes several tasks there. The ledger row stays the conversation; its subtasks say where the work is and how far along it is (n/m done, each with its link — the ToDo drawer lists them). Never a second ledger row per task: `track` them on the row you have.
 
 ## How it reaches people — the injection
 
@@ -70,9 +75,9 @@ One connected app can be **marked as where the company tracks work**, with free-
 
 1. `save_prd` — the approved PRD lands in the Mindspace's PRD folder **and** as one `prd` task on your companion's list (automatic, once per PRD file). Its return carries the PRD id, the Mindspace id, and the org's tracker convention.
 2. Read your companion's tracker style (the persona's `NN-tracker-style` reference), then create **one task per Requirements-table row** in the org's project-management tool, per the convention and their style (ask what the two leave open — which quarter's folder, say). Stamp both Catalyst references on each.
-3. **Write back**: add each created task's ID to the PRD's Requirements table (an '<App> ID' column) and re-save the PRD (same name — it updates in place). The PRD now says where every row is tracked.
+3. **Register + write back**: `track` the tasks on the PRD's ledger row (`ref='#N'`, one subtask per task with its key, title, external_id and url) so they show inside the ToDo; then add each task's ID to the PRD's Requirements table (an '<App> ID' column) and re-save the PRD (same name — it updates in place). The row and the PRD now both say where every requirement is tracked.
 4. **Bank the style** (the Curator, silent): what they picked, how they worded it, what they asked you to change — into the persona's `NN-tracker-style` reference.
-5. *"Where are we on X?"* — read the PRD's Requirements table, query the tool by those IDs, and answer in their words: done / in progress / waiting, and on whom. While you're there, compare the tool with what you filed — every difference updates the style reference.
+5. *"Where are we on X?"* — read the row's `subtasks` (or the PRD's Requirements table), query the tool by those IDs, `subtask_update` what moved (status + the tool's own words), and answer in their words: done / in progress / waiting, and on whom. While you're there, compare the tool with what you filed — every difference updates the style reference.
 6. No tool marked → the breakdown stays inside the PRD; the `prd` row on the ledger is the single tracked item.
 
 ## Examples (shape, not script)
@@ -81,3 +86,4 @@ One connected app can be **marked as where the company tracks work**, with free-
 - Landing shows `#42 replied by Sajal → "Jun 1–7 interim; Jun 8+ new."` → tell your companion, fold it into the PRD, `close ref=#42 note="In the PRD."`.
 - Sajal's reply raises a counter-question → `comment ref=#42 body="June — payouts week only."` — the ball goes back to Sajal, timestamped.
 - *"Priya should own the pincode upload"* → `create kind=request assignee="Priya" …` → if Priya isn't on Catalyst: *"Logged #43 → Priya. Not on Catalyst yet — it links the moment she joins."*
+- Priya's request becomes three tasks in the org's tool → `track ref=#43 subtasks=[{key:'1', title:'…', external_id:'…', url:'…'}, …]` → *"#43 now tracks 3 tasks (0 done)."* Later: read the tool, `subtask_update ref=#43 sub='1' status=done external_status='Completed'`.
