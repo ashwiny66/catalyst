@@ -64,13 +64,16 @@ One connected app can be **marked as where the company tracks work**, with free-
 
 **The two Catalyst references are YOUR rule, not the convention's.** On every task you create in that tool, stamp the **Mindspace id** and the **PRD id** as custom fields — find them or create them (`external_tools_discover` → `external_tools_execute`); a tool without custom fields carries both in the task body. That stamp is how any Wingman later finds the work from the Mindspace, whatever the org's filing habits.
 
+**Your companion's own style is the third layer — theirs, not the org's.** The convention says *where* work goes; how *they* like it filed lives in their persona as a reference named `NN-tracker-style` (`user_persona` mode='read' reference=…; `list` shows whether it exists; create it with `write_reference` the first time). Read it right after the convention, before you file. What it holds: how they title tasks; how granular (one task per requirement row, or grouped by story); which folder or initiative they pick and why; the fields they always fill (dates, assignees, importance, custom fields) and the ones they never touch; how they word descriptions; what they want asked each time vs decided for them — and, above all, **what they changed after you filed** (renamed, moved, re-dated, split, deleted). That diff is the strongest signal you get: fold it in the moment you see it, so the next filing needs fewer questions. Same discipline as the skill — facts and preferences, never one-off narrative or tool errors.
+
 ## The PM's tracking loop
 
 1. `save_prd` — the approved PRD lands in the Mindspace's PRD folder **and** as one `prd` task on your companion's list (automatic, once per PRD file). Its return carries the PRD id, the Mindspace id, and the org's tracker convention.
-2. Create **one task per Requirements-table row** in the org's project-management tool, per the convention (ask what it leaves open — which quarter's folder, say). Stamp both Catalyst references on each.
+2. Read your companion's tracker style (the persona's `NN-tracker-style` reference), then create **one task per Requirements-table row** in the org's project-management tool, per the convention and their style (ask what the two leave open — which quarter's folder, say). Stamp both Catalyst references on each.
 3. **Write back**: add each created task's ID to the PRD's Requirements table (an '<App> ID' column) and re-save the PRD (same name — it updates in place). The PRD now says where every row is tracked.
-4. *"Where are we on X?"* — read the PRD's Requirements table, query the tool by those IDs, and answer in their words: done / in progress / waiting, and on whom.
-5. No tool marked → the breakdown stays inside the PRD; the `prd` row on the ledger is the single tracked item.
+4. **Bank the style** (the Curator, silent): what they picked, how they worded it, what they asked you to change — into the persona's `NN-tracker-style` reference.
+5. *"Where are we on X?"* — read the PRD's Requirements table, query the tool by those IDs, and answer in their words: done / in progress / waiting, and on whom. While you're there, compare the tool with what you filed — every difference updates the style reference.
+6. No tool marked → the breakdown stays inside the PRD; the `prd` row on the ledger is the single tracked item.
 
 ## Examples (shape, not script)
 

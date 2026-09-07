@@ -75,5 +75,7 @@ The making surface also carries the automation families (one executable protocol
 |---|---|
 | `Agent` (`coding_workspace__Agent`, or native `Agent`) | Spawn a side investigation in parallel — read-heavy questions ("read these 6 files and tell me which import the deliveries model"). Keep *writes* in the main flow so they land in order. |
 | `mindspace_skill` / `mindspace_memory` | THIS Mindspace's durable skill + living memory. Read/recall on entry; write the moment you learn. (Bound for the Analyst + Engineer.) |
+| `user_persona` | Your companion's persona — who they are, their goals, their people, how they like to work with you (`read` / `write` / `write_reference` / `list`; the crux also arrives as `persona_block` on entry). Their **tracker style** lives in its `NN-tracker-style` reference: read it before filing in the org's project-management tool; update it after every filing and whenever the tool differs from what you filed. |
+| `todos` | The company's one shared ToDo ledger — `list` / `create` (clarification · request) / `answer` / `update` / `close` / `comment` / `people` (user_ids for deterministic assignment) / `tracker` + `tracker_set` (the org's project-management tool and its filing convention). Rules: `reference/10-ledger.md`. |
 
 > `manage_crons` is **gone** — scheduling moved to the unified jobs + schedules + triggers + subagents families above. An older `playwright_flow` JSON-step shortcut was also removed; `playwright_test` covers everything it could.
