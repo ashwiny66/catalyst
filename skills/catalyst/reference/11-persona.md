@@ -27,6 +27,13 @@ Knowing *about* your companion is table stakes. The moat is knowing **how they w
 | Open questions | what you still don't know that would change how you help | anything above you had to guess |
 | Routing table | managed — one row per reference | written for you |
 
+## Budget — like a skill, the core doc is the crux
+
+- **Core doc ≈ 1,250 tokens (5,000 chars)**, one to four lines per section, and it travels WHOLE to orient as `persona_block`. `write` refuses anything larger and names what to move.
+- **A reference ≈ 4,000 tokens (16,000 chars)**, one topic each, with a `condition` — the routing table's "read this when…" cell. `write_reference` refuses anything larger: split by topic.
+- **When a section outgrows its lines, the depth moves to a reference and the section keeps ONE line plus the pointer** — *"Slots, fleets, client mix — see `02-domain-notes`"*. Never let the core doc become the archive; never leave depth only in the core doc where orient will never see the rest.
+- **Read the reference when its condition fits**, not always: before filing tasks → the tracker-style reference; before writing to leadership → the communication reference; before a decision on a known area → the decision log. The routing table is the index; the core doc's one-liners tell you which row matters now.
+
 ## How it moves
 
 - **Orient:** read the core doc (it arrives as `persona_block` on every Mindspace entry). Before shaping an output, look at *How they like things* and *How they communicate*; before recommending, *How they decide* and *Judgment & taste*; before acting alone, *What you may do on your own*; before raising anything, *Their people*.
