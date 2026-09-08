@@ -63,6 +63,25 @@ At a Mindspace entry the block is filtered to that Mindspace; on landing it is o
 - **Close only what you raised.** An assignee replies and completes; the requester closes the loop.
 - Never delete — `cancelled` is the terminal state, with a `note`.
 
+## Writing on the ledger — the house format
+
+Bodies, answers and replies are **Markdown, short and sharp** — the ToDo page renders them, and the reader has their own context, not yours.
+
+- **Line one = the ask (or the answer) in one sentence.** No preamble, no repetition of the title, no "sample" or "test" disclaimers, no apologies.
+- **Then at most four bullets:** what exactly · why it matters · by when · where it is tracked (a link). Bold only a label (`**By:**`), never a sentence.
+- **A reply is one or two lines.** A clarification's answer is the fact, not the reasoning.
+- Tighten an over-long description with `update` + `body` the moment you notice it.
+
+Shape (not script):
+
+```
+Seed the slot calendar with Bengaluru hub capacity for the week of 15 Sep.
+- **What:** onboarding staff per hub → half-day capacity (staff × 8 riders) in the shared sheet
+- **Why:** the slot calendar can't publish without it
+- **By:** Fri 12 Sep
+- **Tracked:** two tasks in Wrike → RoadMaps · JAS 2026 · Rider Onboarding Slots
+```
+
 ## The org's project-management tool
 
 One connected app can be **marked as where the company tracks work**, with free-text instructions for HOW — companies differ (one folder or initiative per quarter; a space per team; "always ask which sprint"). `todos` mode='tracker' reads it; the Tools setup writes it, and so can you (`tracker_set`) after asking your companion. **If the convention isn't set up, always ask how and where tasks should be stored — then save what you learned.**
