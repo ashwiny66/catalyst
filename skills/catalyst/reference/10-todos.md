@@ -1,10 +1,10 @@
-# The ledger — clarifications, requests, PRDs (the `todos` tool)
+# ToDos — clarifications, requests, PRDs (the `todos` tool)
 
 > **Read this when:** you're about to raise something to another employee, answer what was asked of your companion, set up or use the org's project-management tool, or report "where are we on X".
 
-## One shared ledger
+## One shared ToDo list
 
-Catalyst keeps **one ToDo ledger per company**. Every employee's list is a filter over it (their user id), and a Mindspace is another filter (its id). Your Wingman and every other employee's Wingman read and write the same rows — that is how work moves between people without leaving the workspace.
+Catalyst keeps **one ToDo list per company**. Every employee's list is a filter over it (their user id), and a Mindspace is another filter (its id). Your Wingman and every other employee's Wingman read and write the same rows — that is how work moves between people without leaving the workspace.
 
 **Each row is a conversation** between the requester and the assignee (their Wingmen relay both sides). Three kinds:
 
@@ -12,7 +12,7 @@ Catalyst keeps **one ToDo ledger per company**. Every employee's list is a filte
 |---|---|
 | `clarification` | a question only that person can answer |
 | `request` | work that person must do |
-| `prd` | one task per saved PRD — the PRD's own requirement rows live in the org's **project-management tool**, never as ledger rows |
+| `prd` | one task per saved PRD — the PRD's own requirement rows live in the org's **project-management tool**, never as ToDos |
 
 **Status is whose move it is** — the only vocabulary anyone sees, derived per viewer:
 
@@ -45,11 +45,11 @@ Every `answer` or `comment` by one side hands the ball to the other, and every s
 
 The tool is bound on every surface (Analyst, PM, Engineer; ScratchPad and Mindspace). In the **ScratchPad** `mindspace=current` means *none* — rows land unclassified; move to a Mindspace to classify.
 
-**Any row can carry subtasks** — the tasks it is tracked with in the org's project-management tool: a PRD's requirement rows, or a request that becomes several tasks there. The ledger row stays the conversation; its subtasks say where the work is and how far along it is (n/m done, each with its link — the ToDo drawer lists them). Never a second ledger row per task: `track` them on the row you have.
+**Any row can carry subtasks** — the tasks it is tracked with in the org's project-management tool: a PRD's requirement rows, or a request that becomes several tasks there. The ToDo stays the conversation; its subtasks say where the work is and how far along it is (n/m done, each with its link — the ToDo drawer lists them). Never a second ToDo per task: `track` them on the row you have.
 
 ## How it reaches people — the injection
 
-You never poll the ledger. On every `/catalyst` landing (`open_scratchpad`) and every Mindspace entry, the response carries:
+You never poll the ToDo list. On every `/catalyst` landing (`open_scratchpad`) and every Mindspace entry, the response carries:
 
 - `digest` — counts: `assigned_open` (waiting for your companion's response), `waiting_on_others` (their asks the other side holds), `answers_new` (what came back). Turn it into **one line** in the greeting: *"Two things are waiting on you, and Sajal answered your question on Themis."* Empty → say nothing.
 - `ledger_block` — the items themselves, two groups: **Waiting for your companion's response** (their move — relay conversationally, then record with `answer` / `comment` / `update` / `close`) and **Back on what they asked** (answers and completions, shown **once** — tell them, carry it into the work, then `close` what is settled).
@@ -65,14 +65,14 @@ At a Mindspace entry the block is filtered to that Mindspace; on landing it is o
 - **Edit only what your companion created.** Title, description, priority, due, assignee and Mindspace of someone else's row are theirs — on it you answer, comment, or move the status. (People can still edit in the browser; this is the Wingman's rule.)
 - Never delete — `cancelled` is the terminal state, with a `note`.
 
-## Writing on the ledger — the house format
+## Writing a ToDo — the house format
 
 Bodies, answers and replies are **Markdown, short and sharp** — the ToDo page renders them, and the reader has their own context, not yours.
 
 - **Line one = the ask (or the answer) in one sentence.** No preamble, no repetition of the title, no "sample" or "test" disclaimers, no apologies.
 - **Then at most four bullets:** what exactly · why it matters · by when · where it is tracked (a link). Bold only a label (`**By:**`), never a sentence.
 - **A reply is one or two lines.** A clarification's answer is the fact, not the reasoning.
-- **The ledger carries the ask, the answer and the links — never the analysis.** Numbers, tables, definitions and findings go to the Mindspace's skill or memory (or the PRD); the row links to them. A thread is not your notebook.
+- **A ToDo carries the ask, the answer and the links — never the analysis.** Numbers, tables, definitions and findings go to the Mindspace's skill or memory (or the PRD); the row links to them. A thread is not your notebook.
 - **A correction edits the description** (`update` + `body`) — one row, one current description. Never a chain of corrective replies; if the thread must know, one line: *"Description updated — the 27 Aug figure was over slot riders, not DAU."*
 - Read a row before you touch it: `show` (description, answer, tracked tasks, thread).
 - Tighten an over-long description with `update` + `body` the moment you notice it.
@@ -99,10 +99,10 @@ One connected app can be **marked as where the company tracks work**, with free-
 
 1. `save_prd` — the approved PRD lands in the Mindspace's PRD folder **and** as one `prd` task on your companion's list (automatic, once per PRD file). Its return carries the PRD id, the Mindspace id, and the org's tracker convention.
 2. Read your companion's tracker style (the persona's `NN-tracker-style` reference), then create **one task per Requirements-table row** in the org's project-management tool, per the convention and their style (ask what the two leave open — which quarter's folder, say). Stamp both Catalyst references on each.
-3. **Register + write back**: `track` the tasks on the PRD's ledger row (`ref='#N'`, one subtask per task with its key, title, external_id and url) so they show inside the ToDo; then add each task's ID to the PRD's Requirements table (an '<App> ID' column) and re-save the PRD (same name — it updates in place). The row and the PRD now both say where every requirement is tracked.
+3. **Register + write back**: `track` the tasks on the PRD's ToDo (`ref='#N'`, one subtask per task with its key, title, external_id and url) so they show inside the ToDo; then add each task's ID to the PRD's Requirements table (an '<App> ID' column) and re-save the PRD (same name — it updates in place). The row and the PRD now both say where every requirement is tracked.
 4. **Bank the style** (the Curator, silent): what they picked, how they worded it, what they asked you to change — into the persona's `NN-tracker-style` reference.
 5. *"Where are we on X?"* — read the row's `subtasks` (or the PRD's Requirements table), query the tool by those IDs, `subtask_update` what moved (status + the tool's own words), and answer in their words: done / in progress / waiting, and on whom. While you're there, compare the tool with what you filed — every difference updates the style reference.
-6. No tool marked → the breakdown stays inside the PRD; the `prd` row on the ledger is the single tracked item.
+6. No tool marked → the breakdown stays inside the PRD; the `prd` ToDo is the single tracked item.
 
 ## Examples (shape, not script)
 
