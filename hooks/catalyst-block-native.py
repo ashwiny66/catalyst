@@ -160,6 +160,12 @@ ALLOW_EXACT = {
     "SendFeedback",
     "KillShell",
     "BashOutput",
+    # Artifact publishing (2026-09-08, v0.1.57). Reads a LOCAL html file and
+    # publishes it to claude.ai — a network publish with no workspace hazard, and
+    # the Analyst's natural deliverable (a report page). It fell through to the
+    # Build-deny below in deep_analysis and produced the self-contradicting
+    # "blocked in Build (mode=deep_analysis)" — see the generalized guard.
+    "Artifact",
 }
 
 
@@ -523,7 +529,12 @@ def main() -> int:
     # inspect files on the user's own machine directly. REDIRECTS holds exactly
     # the native FS/shell names (Read/Write/Edit/Bash/Grep/Glob), so external
     # MCPs still fall through to the deny below. (2026-07-23 restore.)
-    if tool_name in REDIRECTS and mode not in _WORKSPACE_BOUND_MODES:
+    # Gate on "not an MCP tool", NOT on membership in REDIRECTS (2026-09-08):
+    # REDIRECTS only lists the FS/shell names, so every NEWER native tool
+    # (Artifact, LSP, Monitor, …) fell past this ALLOW into the Build-deny at the
+    # bottom — outside Build — with a reason that literally said "blocked in
+    # Build (mode=deep_analysis)". Native means native: open outside Build.
+    if not tool_name.startswith("mcp__") and mode not in _WORKSPACE_BOUND_MODES:
         _debug_log(f"  → ALLOW native {tool_name} (mode={mode}: native open outside Build)")
         return 0
     # ── Workspace file-transfer carve-out ──────────────────────────────
