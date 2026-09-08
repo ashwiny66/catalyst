@@ -30,6 +30,7 @@ Every `answer` or `comment` by one side hands the ball to the other, and every s
 | mode | what it does | who may |
 |---|---|---|
 | `list` | `scope=mine` (on your companion) · `asked` (they raised) · `mindspace` (this Mindspace) · `open` (whole org). Filters: `status`, `kind`. | anyone |
+| `show` | `ref` — one row in full: description, answer, tracked tasks, the thread (replies + events) | anyone |
 | `people` | everyone in the org with `user_id · name · email` — look up before addressing | anyone |
 | `create` | `title` (required), `kind` (`clarification` · `request`), `body`, `assignee_user_id` (from people) or `assignee` (name / email / `me`), `priority`, `due`, `mindspace` (`current` default · `none`) | anyone |
 | `answer` | `ref`, `answer`, `final` (`true` → Completed, `false` → a reply; ball to them) | the assignee |
@@ -70,6 +71,9 @@ Bodies, answers and replies are **Markdown, short and sharp** — the ToDo page 
 - **Line one = the ask (or the answer) in one sentence.** No preamble, no repetition of the title, no "sample" or "test" disclaimers, no apologies.
 - **Then at most four bullets:** what exactly · why it matters · by when · where it is tracked (a link). Bold only a label (`**By:**`), never a sentence.
 - **A reply is one or two lines.** A clarification's answer is the fact, not the reasoning.
+- **The ledger carries the ask, the answer and the links — never the analysis.** Numbers, tables, definitions and findings go to the Mindspace's skill or memory (or the PRD); the row links to them. A thread is not your notebook.
+- **A correction edits the description** (`update` + `body`) — one row, one current description. Never a chain of corrective replies; if the thread must know, one line: *"Description updated — the 27 Aug figure was over slot riders, not DAU."*
+- Read a row before you touch it: `show` (description, answer, tracked tasks, thread).
 - Tighten an over-long description with `update` + `body` the moment you notice it.
 
 Shape (not script):
