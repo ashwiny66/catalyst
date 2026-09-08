@@ -35,7 +35,7 @@ Every `answer` or `comment` by one side hands the ball to the other, and every s
 | `create` | `title` (required), `kind` (`clarification` · `request`), `body`, `assignee_user_id` (from people) or `assignee` (name / email / `me`), `priority`, `due`, `mindspace` (`current` default · `none`) | anyone |
 | `answer` | `ref`, `answer`, `final` (`true` → Completed, `false` → a reply; ball to them) | the assignee |
 | `comment` | `ref`, `body` — a reply in the thread; hands the ball to the other side | anyone (a third party's comment moves no ball) |
-| `update` | `ref` + `status` / `priority` / `due` / `assignee_user_id` / `assignee` / `title` | requester or assignee |
+| `update` | `ref` + `status` / `priority` / `due` / `assignee_user_id` / `assignee` / `title` / `body` / `mindspace` | **content (title, description, priority, due, assignee, Mindspace): only the Wingman of the person who created the row**; `status`: requester or assignee |
 | `close` | `ref`, `outcome` (`done` · `cancelled`), `note` | the requester |
 | `tracker` | the org's project-management tool + how tasks are stored there | anyone |
 | `tracker_set` | save that convention (`app`, `instructions`) after asking your companion | anyone |
@@ -62,6 +62,7 @@ At a Mindspace entry the block is filtered to that Mindspace; on landing it is o
 - Ask for the **fact**, never the reasoning behind why you want it.
 - **Relay, then record.** Put the open item to your companion in their words; record their answer immediately and faithfully (`answer`). Never answer on their behalf from your own guess.
 - **Close only what you raised.** An assignee replies and completes; the requester closes the loop.
+- **Edit only what your companion created.** Title, description, priority, due, assignee and Mindspace of someone else's row are theirs — on it you answer, comment, or move the status. (People can still edit in the browser; this is the Wingman's rule.)
 - Never delete — `cancelled` is the terminal state, with a `note`.
 
 ## Writing on the ledger — the house format
