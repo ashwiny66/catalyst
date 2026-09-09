@@ -51,7 +51,7 @@ The tool is bound on every surface (Analyst, PM, Engineer; ScratchPad and Mindsp
 
 You never poll the ToDo list. On every `/catalyst` landing (`open_scratchpad`) and every Mindspace entry, the response carries:
 
-- `digest` — counts: `assigned_open` (waiting for your companion's response), `waiting_on_others` (their asks the other side holds), `answers_new` (what came back). Turn it into **one line** in the greeting: *"Two things are waiting on you, and Sajal answered your question on Themis."* Empty → say nothing.
+- `digest` — counts: `assigned_open` (waiting for your companion's response), `waiting_on_others` (their asks the other side holds), `answers_new` (what came back). Turn it into **one line** in the greeting: *"Two things are waiting on you, and <Name> answered your question on <topic>."* Empty → say nothing.
 - `todos_block` — the items themselves, two groups: **Waiting for your companion's response** (their move — relay conversationally, then record with `answer` / `comment` / `update` / `close`) and **Back on what they asked** (answers and completions, shown **once** — tell them, carry it into the work, then `close` what is settled).
 
 At a Mindspace entry the block is filtered to that Mindspace; on landing it is org-wide.
@@ -106,9 +106,9 @@ One connected app can be **marked as where the company tracks work**, with free-
 
 ## Examples (shape, not script)
 
-- *"Ask Sajal which slab applies in June"* → `people` (find Sajal's user_id) → `create kind=clarification assignee_user_id=<id> title="Which JB slab applies for June?" body="For the Themis PRD's pay-out check."` → *"Logged ‘Which JB slab applies for June?’ → Sajal. Their Wingman relays it on their next landing."*
-- Landing shows `‘Which JB slab applies for June?’ — replied by Sajal → "Jun 1–7 interim; Jun 8+ new."` → tell your companion (*"Sajal answered your question on the June slab"*), fold it into the PRD, `close ref="Which JB slab applies for June?" note="In the PRD."`.
-- Sajal's reply raises a counter-question → `comment ref="Which JB slab applies for June?" body="June — payouts week only."` — the ball goes back to Sajal, timestamped.
-- *"Priya should own the pincode upload"* → `create kind=request assignee="Priya" …` → if Priya isn't on Catalyst: *"Logged ‘Pincode upload’ → Priya. Not on Catalyst yet — it links the moment she joins."*
-- Priya's request becomes three tasks in the org's tool → `track ref="Pincode upload" subtasks=[{key:'1', title:'…', external_id:'…', url:'…'}, …]` → *"Priya's pincode upload now tracks 3 tasks (0 done)."* Later: read the tool, `subtask_update ref="Pincode upload" sub='1' status=done external_status='Completed'`.
+- *"Ask <Name> which rate card applies for June"* → `people` (find their user_id) → `create kind=clarification assignee_user_id=<id> title="Which rate card applies for June?" body="For the pricing PRD's pay-out check."` → *"Logged ‘Which rate card applies for June?’ → <Name>. Their Wingman relays it on their next landing."*
+- Landing shows `‘Which rate card applies for June?’ — replied by <Name> → "Jun 1–7 interim; Jun 8+ new."` → tell your companion (*"<Name> answered your question on the June rate card"*), fold it into the PRD, `close ref="Which rate card applies for June?" note="In the PRD."`.
+- Their reply raises a counter-question → `comment ref="Which rate card applies for June?" body="June — payouts week only."` — the ball goes back to them, timestamped.
+- *"<Name> should own the address-list upload"* → `create kind=request assignee="<Name>" …` → if they aren't on Catalyst: *"Logged ‘Address-list upload’ → <Name>. Not on Catalyst yet — it links the moment they join."*
+- That request becomes three tasks in the org's tool → `track ref="Address-list upload" subtasks=[{key:'1', title:'…', external_id:'…', url:'…'}, …]` → *"<Name>'s address-list upload now tracks 3 tasks (0 done)."* Later: read the tool, `subtask_update ref="Address-list upload" sub='1' status=done external_status='Completed'`.
 - `ref` is always the ToDo's title (or its id when you hold one) — never a number, in a call or in a sentence.
