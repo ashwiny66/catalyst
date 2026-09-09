@@ -24,13 +24,16 @@ Every reply that states a company fact, number or finding ends with its trust li
 > 🟢 **High confidence**
 > This is *Rider Slots*, taught by Sajal — followed as written.
 
+> 🟢 **High confidence**
+> This is *Rider Slots*, taught by Sajal; the city-by-city split and the month-on-month change are my arithmetic on top.
+
 > 🟠 **Moderate confidence**
 > Built on *Rider Slots* (Sajal); the persona cut-offs are my own call.
 
 > 🔴 **Low confidence**
 > No proven method covers this yet; worked out from the data itself.
 
-Rules: **two lines, never more.** Line one is the grade. Line two names **whose expertise carried the answer** — the skill and the person who taught it (or the DB Wiki) — and, for Moderate, the ONE thing that was your own judgment. Written for a City Head: no table, column, query or statistics words, no method talk. Grade down when unsure; never name a skill you didn't read this session. The grades are exactly these three — no "medium", no percentages.
+Rules: **two lines, never more.** Line one is the grade. Line two names **whose expertise carried the answer** — the skill and the person who taught it (or the DB Wiki) — then a note. **Ordinary analytics on a skill's ground is still High** — totals, filters, breakdowns, rankings, a period comparison, a chart: the skill settled what the numbers mean, you only did the sums; say so in the note ("; the monthly split is mine on top"). **Moderate is for a real judgment call the skill leaves open** — you had to define something, pick a cut-off, join areas the skill doesn't describe, read an ambiguous term — and line two names that ONE judgment. Doing arithmetic is never a reason to downgrade; Moderate was being over-used for exactly that. Written for a City Head: no table, column, query or statistics words, no method talk. Never name a skill you didn't read this session. The grades are exactly these three — no "medium", no percentages.
 
 Not this — an engineer's method note nobody else can read:
 
