@@ -140,7 +140,7 @@ ALLOW_EXACT = {
     # Plan mode (EnterPlanMode/ExitPlanMode) is NOT here any more (2026-09-06,
     # v0.1.53): it is denied while a Catalyst session is live — see
     # _PLAN_MODE_TOOLS. The PM shapes the PRD in conversation (save_prd) and puts
-    # its tasks on the shared ledger (todos); there is nothing for plan mode to do.
+    # its tasks on the shared ToDos (todos); there is nothing for plan mode to do.
     # NOTE: a spawned native subagent runs under the parent's
     # cc_session_id, so its OWN native FS/shell calls are still governed by this block
     # while a build is active — it should drive the project via coding_workspace__*.
@@ -199,7 +199,7 @@ _WORKSPACE_BOUND_MODES = {"coding", "vibe_code"}
 
 # Claude Code's native plan mode. Denied while this tab has a Catalyst row (any
 # mode): the Wingman has ONE planning artefact — the PRD the PM shapes in
-# conversation — and one tracker — the shared ToDo ledger. A plan-mode detour
+# conversation — and one tracker — the shared ToDos. A plan-mode detour
 # would park the session behind Claude Code's own approve-the-plan gate instead.
 _PLAN_MODE_TOOLS = {"EnterPlanMode", "ExitPlanMode"}
 
@@ -518,7 +518,7 @@ def main() -> int:
         return _emit_deny(
             f"`{tool_name}` is off while a Catalyst session is live — plan mode isn't part "
             "of the Wingman's flow. The PM shapes the PRD in conversation and saves it "
-            "with `save_prd`; its tasks go on the shared ledger with `todos`; the "
+            "with `save_prd`; its tasks become ToDos with `todos`; the "
             "Engineer builds from it. Carry on without plan mode."
         )
     if _is_allowed_for_owner(tool_name):
