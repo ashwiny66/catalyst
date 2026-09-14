@@ -67,7 +67,13 @@ OR
    │ complete_build returns pause_after_complete=true
    │ PostToolUse _maybe_clear_local_state
    ▼
-{...row kept..., mode=menu, catalyst_session_id=null}
+{...row kept..., mode=menu, catalyst_session_id=KEPT}   ← the finished Mindspace
+                                                          stays bound for reflect/resume
+OR
+   │ switch_mindspace returns ready_for_new + pause_after_complete=true
+   │ PostToolUse _maybe_clear_local_state
+   ▼
+{...row kept..., mode=menu, catalyst_session_id=null}   ← released: next transition mints fresh
 
 OR
    │ 10 days idle

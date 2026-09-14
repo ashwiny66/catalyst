@@ -107,7 +107,9 @@ When the response carries `events_jwt` (+ `events_jwt_exp`), write to `~/.claude
 Per-tab — both branches touch ONLY the firing tab's registry row:
 
 - `pause_local: True` → `session_registry.remove(cc)` (this row only).
-- `pause_after_complete: True` → patch this row to `mode=menu, session_id=None`.
+- `pause_after_complete: True` — the same flag from two tools, handled by `__tool_name__`:
+  - from **`switch_mindspace`** (ready_for_new) → `mode=menu, session_id=None` — the user wants a fresh Mindspace, so the next transition may mint one.
+  - from **`complete_build`** → `mode=menu`, **session_id KEPT** (since v0.1.73). Completion is followed by the Curator's reflect and often a "resume to bank the lessons"; clearing here sent those calls out unbound — skill/memory writes landed nowhere and `start_app_building` minted a stray greenfield Mindspace (2026-09-14). The finished Mindspace stays bound until the user switches away. Guard: `tests/test_complete_keeps_binding.py`.
 
 **Neither branch touches the events_jwt anymore** — it's identity-scoped (shared by all tabs); only `logout` (PreToolUse Case 0) deletes it.
 

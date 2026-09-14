@@ -304,8 +304,10 @@ def _patch_sentinel(updates: Dict[str, Any]) -> bool:
     """Patch the firing tab's registry row. Returns True iff at least one
     field actually changed. Best-effort — never raises.
 
-    ``None`` values in ``updates`` MEAN "clear this field" — used by
-    ``pause_after_complete`` to drop session_id while preserving mode=menu.
+    ``None`` values in ``updates`` MEAN "clear this field" — used by the
+    ``switch_mindspace`` ready_for_new branch to drop session_id while
+    preserving mode=menu (``complete_build`` keeps the session — see
+    ``_maybe_clear_local_state``).
     Empty strings / empty dicts are treated as no-op. Patching never CLAIMS
     a row (that's the PreToolUse hook's job) — no row → False."""
     if _registry is None or not _CC_SESSION_ID:
@@ -534,9 +536,18 @@ def _maybe_clear_local_state(payload: Dict[str, Any]) -> None:
     ``logout`` (PreToolUse Case 0) deletes it.
 
     ``pause_local: True``     → remove this tab's row (abandon / end).
-    ``pause_after_complete``  → flip this tab's row to mode='menu', clear
-                                session_id (build done; the tab stays
-                                registered for its next entry).
+    ``pause_after_complete``  → the SAME flag arrives from two different tools
+                                and they need opposite handling of the binding:
+        * ``switch_mindspace`` (ready_for_new): mode='menu' AND clear
+          session_id — the user asked for a fresh Mindspace, so the next
+          transition must be free to mint one (tests/test_switch_to_new_mindspace).
+        * ``complete_build``: mode='menu' but KEEP session_id. Finishing a
+          build is immediately followed by the Curator's reflect — skill,
+          memory, persona writes — and often a "resume to bank the lessons".
+          Clearing here sent those calls out unbound: the writes landed
+          nowhere and ``start_app_building`` minted a stray greenfield
+          Mindspace (IBS, 2026-09-14). The finished Mindspace stays this
+          tab's binding until the user switches away.
     """
     if payload.get("pause_local"):
         try:
@@ -545,6 +556,10 @@ def _maybe_clear_local_state(payload: Dict[str, Any]) -> None:
         except Exception as exc:
             logger.warning("registry row remove failed: %s", exc)
     elif payload.get("pause_after_complete"):
+        if (payload.get("__tool_name__") or "") == "complete_build":
+            if _patch_sentinel({"mode": "menu"}):
+                logger.info("sentinel transitioned: mode=menu, session_id KEPT (complete_build)")
+            return
         # session_id=None means "clear this field" — handled by _patch_sentinel.
         if _patch_sentinel({"mode": "menu", "session_id": None}):
             logger.info("sentinel transitioned: mode=menu, session_id cleared (pause_after_complete)")
