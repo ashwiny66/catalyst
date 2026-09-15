@@ -556,13 +556,23 @@ def main() -> int:
     # active: Catalyst is a strict allow-list (Catalyst tools + native
     # plumbing only), mirroring FDE whose agent only has the Catalyst surface.
     if tool_name.startswith("mcp__"):
+        # A registered tab with NO Mindspace bound (mode=menu, session_id empty —
+        # a lone health_check / list_mindspaces / current_session claimed the
+        # row) is not an active Catalyst session: nothing to protect, and
+        # Catalyst's own coding_workspace__* tools would refuse anyway (no
+        # session to route to). Denying here stranded the model between the
+        # two (2026-09-15). Deny only once a Mindspace is actually bound.
+        if not ((entry or {}).get("session_id") or "").strip():
+            _debug_log(f"  → ALLOW external MCP {tool_name} (tab registered, no Mindspace bound)")
+            return 0
         _debug_log(f"  → DENY external MCP {tool_name} (Catalyst allow-list)")
         return _emit_deny(
             f"`{tool_name}` is an external MCP — blocked while a Catalyst "
-            "session is active. Do the work with Catalyst's own tools: "
-            "run_select_query / run_python / the knowledge base for data, the "
-            "coding_workspace tools for builds. To use other MCPs, end the "
-            "Catalyst session first (abandon_build / current_session)."
+            "session is active. Do the work with Catalyst's own tools — they route "
+            "to the current Mindspace: coding_workspace__run_select_query / "
+            "run_python / the knowledge base for data, the other coding_workspace "
+            "tools for builds. To use other MCPs, end the Catalyst session first "
+            "(`end`, or abandon_build for a build)."
         )
     # Native FS/shell tool in a BUILD mode (coding/vibe_code) — refuse with a
     # redirect to the matching coding_workspace tool. The Engineer's app lives on
