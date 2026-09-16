@@ -133,7 +133,7 @@ First hit wins for each key:
 
 | Key | Default | Used by |
 |---|---|---|
-| `CATALYST_BACKEND_URL` | `http://localhost:8000` (literal) / `http://13.202.117.250:8000` (.env) | `_resolve_backend_url`, becomes `{base}/api/events/record/{sid}` |
+| `CATALYST_BACKEND_URL` | `https://buildwithcatalyst.ai` (literal; a legacy `13.202.117.250:8000/9000` value is rewritten to it since v0.1.76 — the raw ports are closed) / `http://13.202.117.250:8000` (.env) | `_resolve_backend_url`, becomes `{base}/api/events/record/{sid}` |
 | `CATALYST_MCP_URL` | — (set in `.env`) | Reference only; `.mcp.json` is the actual MCP URL |
 | `CATALYST_MCP_SECRET` | — | `_resolve_mcp_secret` (currently unused — auth is via events_jwt) |
 | `CATALYST_HOOK_DEBUG` | unset | Toggles verbose payload dump in `_setup_debug_logger` |

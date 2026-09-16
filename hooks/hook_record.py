@@ -1202,8 +1202,18 @@ def _resolve_mcp_secret() -> str:
     return _resolve_config("CATALYST_MCP_SECRET", "")
 
 
+_PUBLIC_BACKEND_URL = "https://buildwithcatalyst.ai"
+# The control plane's raw ports (:8000 builder, :9000 MCP) were closed on 2026-09-16; every
+# request goes through the front door on 443. A stale .env or shell export still carrying
+# the raw address made every hook hang past Claude Code's 10 s budget, so it is rewritten.
+_LEGACY_RAW_BACKENDS = ("13.202.117.250:8000", "13.202.117.250:9000")
+
+
 def _resolve_backend_url() -> str:
-    return _resolve_config("CATALYST_BACKEND_URL", "http://localhost:8000")
+    url = _resolve_config("CATALYST_BACKEND_URL", _PUBLIC_BACKEND_URL)
+    if any(raw in url for raw in _LEGACY_RAW_BACKENDS):
+        return _PUBLIC_BACKEND_URL
+    return url
 
 
 def _post_turn(
@@ -1280,7 +1290,8 @@ def _post_turn(
     t0 = time.monotonic()
     http_code = 0
     try:
-        with urlrequest.urlopen(req, timeout=15.0) as resp:
+        # Under the 10 s hook budget: a dead backend must fail here, not get the hook killed.
+        with urlrequest.urlopen(req, timeout=6.0) as resp:
             http_code = resp.status
             if resp.status >= 400:
                 _log_warn(ctx, "POST %s -> %s", url, resp.status)
