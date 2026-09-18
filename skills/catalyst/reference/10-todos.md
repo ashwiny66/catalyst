@@ -14,14 +14,17 @@ Catalyst keeps **one ToDo list per company**. Every employee's list is a filter 
 | `request` | work that person must do |
 | `prd` | one task per saved PRD — the PRD's own requirement rows live in the org's **project-management tool**, never as ToDos |
 
-**Status is whose move it is** — the only vocabulary anyone sees, derived per viewer:
+**Status is Pending · In Progress · Completed · Cancelled** — one word everyone sees the same way (`status` on the tool: `pending` · `in_progress` · `completed` · `cancelled`). Beside it, every row also says **whose move it is**, derived per viewer:
 
 - **Waiting for your response** — the ball is with you (addressed to you and unanswered, or your ask came back and it's your move).
 - **Waiting for <name>'s response** — you raised it; the ball is with them.
 - **You replied** — you answered; it's with the other side now.
-- **Completed** (or **Cancelled**).
 
-Every `answer` or `comment` by one side hands the ball to the other, and every state change is a timestamped event — the row's thread is its comments and events in order.
+Every `answer` or `comment` by one side hands the ball to the other; a final answer completes the row. Every change — status, priority, due, assignee, description — is a timestamped event, and the row's thread is its comments and events in order. Say both when it matters: *"In Progress, waiting for Ankit's response."*
+
+**Everyone in the company sees every ToDo** (the ToDos page and `scope=all`); only the two people on a row change it — the requester or the assignee moves its status, priority, due, labels and assignee; anyone may edit the description.
+
+**A due is a date, a week of a month, or a month** — `due` takes `2026-10-14` (or `14 Oct 2026`), `2026-10-W2` (or `'2nd week of Oct 2026'`, `'last week of Oct'`), `2026-10` (or `'Oct 2026'`); a month named without a year means the next one to come. The row reads back the same way (`due 2nd week of Oct 2026`). **Labels** are short free-text tags on the row (`labels`, up to twelve; `update` replaces the set).
 
 **Assignee is a person, exactly.** `mode='people'` lists everyone on Catalyst in the org with their `user_id` — pass it as `assignee_user_id` so the row is stamped to precisely the right person. A name or email also works (unique match links it); someone not on Catalyst stays name-only and links the moment they join. Never refuse to raise something because "they're not on Catalyst".
 
@@ -29,13 +32,13 @@ Every `answer` or `comment` by one side hands the ball to the other, and every s
 
 | mode | what it does | who may |
 |---|---|---|
-| `list` | `scope=mine` (on your companion) · `asked` (they raised) · `mindspace` (this Mindspace) · `open` (whole org). Filters: `status`, `kind`. | anyone |
+| `list` | `scope=mine` (on your companion) · `asked` (they raised) · `mindspace` (this Mindspace) · `open` or `all` (whole org). Filters: `status` (`pending` · `in_progress` · `completed` · `cancelled`), `kind`. Each line: `title [Kind · Status · whose move · P2 · due …]`. | anyone |
 | `show` | `ref` — one row in full: description, answer, tracked tasks, the thread (replies + events) | anyone |
 | `people` | everyone in the org with `user_id · name · email` — look up before addressing | anyone |
-| `create` | `title` (required), `kind` (`clarification` · `request`), `body`, `assignee_user_id` (from people) or `assignee` (name / email / `me`), `priority`, `due`, `mindspace` (`current` default · `none`) | anyone |
+| `create` | `title` (required), `kind` (`clarification` · `request`), `body`, `assignee_user_id` (from people) or `assignee` (name / email / `me`), `priority`, `due` (a date · a week of a month · a month), `labels`, `mindspace` (`current` default · `none`) | anyone |
 | `answer` | `ref`, `answer`, `final` (`true` → Completed, `false` → a reply; ball to them) | the assignee |
 | `comment` | `ref`, `body` — a reply in the thread; hands the ball to the other side | anyone (a third party's comment moves no ball) |
-| `update` | `ref` + `status` / `priority` / `due` / `assignee_user_id` / `assignee` / `title` / `body` / `mindspace` | **content (title, description, priority, due, assignee, Mindspace): only the Wingman of the person who created the row**; `status`: requester or assignee |
+| `update` | `ref` + `status` (`pending` · `in_progress` · `completed` · `cancelled`) / `priority` / `due` (`''` clears) / `labels` / `assignee_user_id` / `assignee` / `title` / `body` / `mindspace` — a priority or due change is recorded in the thread | **content (title, description, priority, due, labels, assignee, Mindspace): only the Wingman of the person who created the row**; `status`: requester or assignee (cancelling: the requester) |
 | `close` | `ref`, `outcome` (`done` · `cancelled`), `note` | the requester |
 | `tracker` | the org's project-management tool + how tasks are stored there | anyone |
 | `tracker_set` | save that convention (`app`, `instructions`) after asking your companion | anyone |
