@@ -1,10 +1,12 @@
-"""External MCPs (any ``mcp__*`` that is not catalyst-mcp) follow the Mindspace BINDING,
-not the registry row — the v0.1.74 rule restored in v0.1.77.
+"""External MCPs (any ``mcp__*`` that is not catalyst-mcp) follow the SAME switch as the
+native FS/shell tools: denied only while the tab is in a Build mode (coding/vibe_code with a
+Mindspace bound); open in menu, Analyst, PM and in a tab with no Mindspace bound.
+v0.1.78 (user decision 2026-09-18: "even in PM mode all native tools open, only Engineering not").
 
-A teammate (2026-09-17) was stranded: after ``switch_mindspace`` with no target the row
-still existed (mode=menu, session cleared) and 0.1.75/0.1.76 kept denying Notion because
-they keyed on the row's presence. Runs the REAL hook as a subprocess against a throwaway
-$HOME (never touches the developer's registry). stdlib only, <5s.
+History: 0.1.75/0.1.76 denied on the registry row alone and stranded a teammate on
+2026-09-17 (Notion after ``switch_mindspace`` with no target); 0.1.77 keyed on the binding.
+Runs the REAL hook as a subprocess against a throwaway $HOME (never touches the developer's
+registry). stdlib only, <5s.
 """
 import json
 import os
@@ -75,18 +77,29 @@ post("switch_mindspace", {"status": "ready_for_new", "paused": {"paused": True},
 check("3 cleared via switch → external MCP", pre(EXTERNAL), "allow")
 check("3 cleared via switch → native Read", pre("Read", {"file_path": "/x"}), "allow")
 
-# 4. Bound again, this time in Analyst mode: natives open, external MCPs still denied (current rule).
+# 4. Bound in Analyst mode: natives AND external MCPs open (not a Build).
 post("start_analysis", {"session_id": SID, "app_root": "/p/x", "gen_stream_id": "g:1:3", "mode": "deep_analysis"})
 check("4 bound (deep_analysis) → native Read", pre("Read", {"file_path": "/x"}), "allow")
-check("4 bound (deep_analysis) → external MCP", pre(EXTERNAL), "deny")
+check("4 bound (deep_analysis) → external MCP", pre(EXTERNAL), "allow")
 
-# 5. `end` drops this tab's row: everything passes again.
+# 5. Bound in PM (Spec) mode: same — open.
+post("start_spec", {"session_id": SID, "app_root": "/p/x", "gen_stream_id": "g:1:4", "mode": "spec"})
+check("5 bound (spec) → native Read", pre("Read", {"file_path": "/x"}), "allow")
+check("5 bound (spec) → external MCP", pre(EXTERNAL), "allow")
+
+# 6. Back into a Build: both denied again; finishing the build (binding KEPT, mode=menu) reopens them.
+post("start_app_building", {"session_id": SID, "app_root": "/p/x", "gen_stream_id": "g:1:5", "mode": "coding"})
+check("6 bound (coding) → external MCP", pre(EXTERNAL), "deny")
+post("complete_build", {"status": "completed", "already_completed": False, "pause_after_complete": True})
+check("6 after complete_build → external MCP", pre(EXTERNAL), "allow")
+
+# 7. `end` drops this tab's row: everything passes.
 pre(cat("end"))
-check("5 after end → external MCP", pre(EXTERNAL), "allow")
+check("7 after end → external MCP", pre(EXTERNAL), "allow")
 
 print()
 if failures:
     for f in failures:
         print("FAIL:", f)
     sys.exit(1)
-print("ALL PASS — external MCPs follow the binding: open when no Mindspace is bound, denied once one is")
+print("ALL PASS — external MCPs follow the Build switch: denied only in coding/vibe_code, open everywhere else")

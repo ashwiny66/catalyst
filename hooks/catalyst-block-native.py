@@ -552,28 +552,26 @@ def main() -> int:
     # carve-out just above still fires in Build so a build can pull local files.
     # (Agent stays always-allowed via ALLOW_EXACT; plan mode is denied above.)
     # External MCP server (any mcp__* that isn't catalyst-mcp — those passed
-    # _is_allowed_for_owner above). BLACKLISTED while a Catalyst session is
-    # active: Catalyst is a strict allow-list (Catalyst tools + native
-    # plumbing only), mirroring FDE whose agent only has the Catalyst surface.
+    # _is_allowed_for_owner above). ONE rule with the native FS/shell tools:
+    # blocked only while this tab is in a Build mode (_WORKSPACE_BOUND_MODES),
+    # where the app lives on the workspace and every write must go through the
+    # coding_workspace surface. Open in menu / Analyst / PM / Curator — and in a
+    # tab with no Mindspace bound at all. User decision 2026-09-18 ("even in PM
+    # mode all native tools open, only Engineering not"), plugin v0.1.78; 0.1.75/76
+    # denied on the row alone and stranded a teammate on 2026-09-17 (Notion after a
+    # cleared session), 0.1.77 keyed on the binding.
     if tool_name.startswith("mcp__"):
-        # A registered tab with NO Mindspace bound (mode=menu, session_id empty —
-        # a lone health_check / list_mindspaces claimed the row, or the user
-        # cleared the Mindspace with switch_mindspace) is not an active Catalyst
-        # session: nothing to protect, and Catalyst's own workspace tools would
-        # refuse anyway (no session to route to). Denying here stranded a teammate
-        # on 2026-09-17 (Notion, cleared session). The v0.1.74 rule, restored in
-        # v0.1.77 (user decision 2026-09-18). Deny only once a Mindspace is bound.
-        if not ((entry or {}).get("session_id") or "").strip():
-            _debug_log(f"  → ALLOW external MCP {tool_name} (tab registered, no Mindspace bound)")
+        bound = bool(((entry or {}).get("session_id") or "").strip())
+        if not bound or mode not in _WORKSPACE_BOUND_MODES:
+            _debug_log(f"  → ALLOW external MCP {tool_name} (mode={mode}, bound={bound}: not a Build)")
             return 0
-        _debug_log(f"  → DENY external MCP {tool_name} (Catalyst allow-list)")
+        _debug_log(f"  → DENY external MCP {tool_name} (Build mode {mode})")
         return _emit_deny(
-            f"`{tool_name}` is an external MCP — blocked while a Catalyst "
-            "Mindspace is bound in this tab. Do the work with Catalyst's own tools: "
-            "run_select_query / run_python / the knowledge base for data, the "
-            "coding_workspace tools for builds. To use other MCPs, unbind this tab "
-            "first: `end` (drops only this tab's binding; abandon_build during a "
-            "build), or `switch_mindspace` with no target."
+            f"`{tool_name}` is an external MCP — blocked while this tab is in a "
+            "Build. Do the work with Catalyst's own tools: run_select_query / "
+            "run_python / the knowledge base for data, the coding_workspace tools "
+            "for the app. External MCPs work again once the build is over: "
+            "complete_build or abandon_build, `end`, or switch_mindspace with no target."
         )
     # Native FS/shell tool in a BUILD mode (coding/vibe_code) — refuse with a
     # redirect to the matching coding_workspace tool. The Engineer's app lives on
