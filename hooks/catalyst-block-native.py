@@ -570,8 +570,12 @@ def main() -> int:
             f"`{tool_name}` is an external MCP — blocked while this tab is in a "
             "Build. Do the work with Catalyst's own tools: run_select_query / "
             "run_python / the knowledge base for data, the coding_workspace tools "
-            "for the app. External MCPs work again once the build is over: "
-            "complete_build or abandon_build, `end`, or switch_mindspace with no target."
+            "for the app. Need that MCP for THIS build (a page, a ticket, a source)? "
+            "Step out, don't work around: call start_analysis on this same Mindspace "
+            "(the bound Mindspace is kept), read as the Analyst, then start_app_building "
+            "to resume. Or connect the app in Catalyst (Setup → Tools) and use "
+            "external_tools_discover / external_tools_execute here. External MCPs also "
+            "reopen after complete_build / abandon_build / `end`."
         )
     # Native FS/shell tool in a BUILD mode (coding/vibe_code) — refuse with a
     # redirect to the matching coding_workspace tool. The Engineer's app lives on
@@ -586,9 +590,10 @@ def main() -> int:
         f"already has loaded) — it routes to the correct workspace "
         f"automatically. To pull a file off the user's laptop into the build, "
         f"call `upload_to_workspace` and run the curl it returns.\n\n"
-        f"If you need native tools right now, switch to the Analyst — "
-        f"`start_analysis` — where every native tool is open, and come back to "
-        f"Build after. Do NOT call `abandon_build` for this: it marks the "
+        f"To READ something local or run a local tool right now, step out to the "
+        f"Analyst — `start_analysis` on this same Mindspace (the bound Mindspace is "
+        f"kept), where every native tool is open — then `start_app_building` to "
+        f"resume the Build. Do NOT call `abandon_build` for this: it marks the "
         f"Mindspace abandoned and throws away the build you are in."
     )
     return _emit_deny(reason)
