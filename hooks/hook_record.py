@@ -490,6 +490,22 @@ def _maybe_update_local_sentinel(payload: Dict[str, Any]) -> None:
     current = _read_sentinel() or {}
     current_sid = (current.get("session_id") or "").strip()
 
+    # A PASSIVE switch into a shipped Mindspace: switch_mindspace answers
+    # {status: "switched", mode: "menu", session_id, app_root} and deliberately
+    # NO gen_stream_id (it must not re-enter Build). That is not a "full entry"
+    # by the test below, so it fell into the partial guard and — when this tab
+    # was bound to another Mindspace (the ScratchPad every plugin landing binds
+    # since 2026-09-06) — was DROPPED: the tab stayed on the old Mindspace, the
+    # next start_app_building got stamped with the old id, the server 500'd, and
+    # a completed Mindspace could never be opened from the plugin (COD, HL,
+    # 2026-09-18). The user picked this Mindspace by name: bind the tab to it,
+    # mode=menu, the previous Mindspace's stream id cleared.
+    if payload.get("__tool_name__") == "switch_mindspace" and payload.get("status") == "switched":
+        if _patch_sentinel({"session_id": sid, "mode": mode or "menu",
+                            "app_root": app_root, "gen_stream_id": None}):
+            logger.info("sentinel switched (passive) %s → %s: mode=%s, completed Mindspace bound",
+                        current_sid[:8] or "(none)", sid[:8], mode or "menu")
+        return
     if is_full_entry:
         if current_sid and current_sid != sid:
             logger.info(
