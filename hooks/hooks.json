@@ -1,12 +1,33 @@
 {
-  "description": "Catalyst plugin hooks: PreToolUse guard + PostToolUse/Stop/UserPromptSubmit event sink",
+  "description": "Catalyst plugin hooks: PreToolUse guard + PostToolUse/Stop/UserPromptSubmit event sink + the status line (SessionStart installs it, Pre/PostToolUse feed it)",
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/statusline_install.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "hooks": [
           {
             "type": "command",
             "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/catalyst-block-native.py\"",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__.*catalyst-mcp__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/statusline_capture.py\"",
             "timeout": 5
           }
         ]
@@ -19,6 +40,16 @@
             "type": "command",
             "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/hook_record.py\"",
             "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__.*catalyst-mcp__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/statusline_capture.py\"",
+            "timeout": 5
           }
         ]
       }
