@@ -1,12 +1,12 @@
 {
-  "description": "Catalyst plugin hooks: PreToolUse guard + PostToolUse/Stop/UserPromptSubmit event sink + the status line (SessionStart installs it, Pre/PostToolUse feed it; Node, so it runs on Windows too)",
+  "description": "Catalyst plugin hooks: PreToolUse guard + PostToolUse/Stop/UserPromptSubmit event sink + the status line (SessionStart installs it, Pre/PostToolUse feed it) — the status line hooks go through statusline_hook.sh, which runs node where it exists, python3 otherwise, and exits quietly with neither",
   "hooks": {
     "SessionStart": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/statusline_install.js\"",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/statusline_hook.sh\" install",
             "timeout": 5
           }
         ]
@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/statusline_capture.js\"",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/statusline_hook.sh\" capture",
             "timeout": 5
           }
         ]
@@ -48,7 +48,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/statusline_capture.js\"",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/statusline_hook.sh\" capture",
             "timeout": 5
           }
         ]
