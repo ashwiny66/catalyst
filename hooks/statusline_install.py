@@ -127,11 +127,12 @@ def main() -> int:
     sid = str(ev.get("session_id") or "").strip()
     if sid:
         touch_state(sid)
-    # Claude Code reads the statusLine setting when it launches, so the line shows
-    # from the NEXT session — say so once, to the person (systemMessage is shown to
-    # the user and adds nothing to the model's context).
+    # Claude Code re-runs a changed statusLine command right away (docs: "A change to
+    # the command itself skips the debounce"), so the line usually appears at once;
+    # say so once, to the person (systemMessage is shown to the user and adds nothing
+    # to the model's context). json.dumps keeps this stdout ASCII whatever the locale.
     if outcome == "installed":
-        sys.stdout.write(json.dumps({"systemMessage": "⚡ Catalyst status line installed — it shows from your next Claude Code session."}))
+        sys.stdout.write(json.dumps({"systemMessage": "⚡ Catalyst status line installed — look at the bottom of Claude Code (if it is not there yet, it will be on your next session)."}))
     return 0
 
 
