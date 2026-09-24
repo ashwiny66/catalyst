@@ -131,6 +131,8 @@ def main() -> int:
         touch_state(sid)
     if outcome == "installed":
         sys.stdout.write(json.dumps({"systemMessage": "⚡ Catalyst status line installed — look at the bottom of Claude Code (if it is not there yet, it will be on your next session)."}))
+    elif outcome == "error":
+        sys.stdout.write(json.dumps({"systemMessage": "⚡ Catalyst could not set up its status line (settings.json unreadable or not writable) — run /catalyst:statusline for the details."}))
     return 0
 
 

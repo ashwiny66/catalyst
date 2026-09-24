@@ -129,6 +129,8 @@ async function main() {
   // appears at once; say so once, to the person.
   if (outcome === 'installed') {
     process.stdout.write(JSON.stringify({ systemMessage: '⚡ Catalyst status line installed — look at the bottom of Claude Code (if it is not there yet, it will be on your next session).' }));
+  } else if (outcome === 'error') {
+    process.stdout.write(JSON.stringify({ systemMessage: '⚡ Catalyst could not set up its status line (settings.json unreadable or not writable) — run /catalyst:statusline for the details.' }));
   }
 }
 
