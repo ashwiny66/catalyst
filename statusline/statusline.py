@@ -105,10 +105,13 @@ def plural(n: int, one: str, many: str) -> str:
 
 
 def render(st, now_ms: float) -> str:
-    if not st:
-        return ""
     tick = int(now_ms // 1000)
     brand = f"{BASE}{BOLD}⚡{RESET} {BOLD}{shimmer('catalyst', tick)}{RESET}"
+    # A tab opened before the plugin (or its update) never ran the start-up hook and
+    # has no record: still show the brand, resting — every tab carries the line, and
+    # the tally fills in where the hooks run. Only a payload without a session id is blank.
+    if not st:
+        return f"{brand} {WHITE}· ready{RESET}"
 
     inflight = st.get("inflight") or None
     if inflight and inflight.get("at") is not None and 0 <= now_ms - float(inflight["at"]) < INFLIGHT_TTL_S * 1000:

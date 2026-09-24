@@ -86,9 +86,12 @@ function shimmer(word, tick) {
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
 function render(st, now) {
-  if (!st) return '';
   const tick = Math.floor(now / 1000);
   const brand = `${BASE}${BOLD}⚡${RESET} ${BOLD}${shimmer('catalyst', tick)}${RESET}`;
+  // A tab opened before the plugin (or its update) never ran the start-up hook and has
+  // no record: still show the brand, resting — every tab carries the line, and the
+  // tally fills in where the hooks run. Only a payload without a session id is blank.
+  if (!st) return `${brand} ${WHITE}· ready${RESET}`;
 
   const inflight = st.inflight;
   if (inflight && inflight.at != null) {
