@@ -34,35 +34,51 @@ ENTRY = {"type": "command", "command": "python3 ~/.catalyst-claude/statusline-cu
 SCHEMA = 1
 
 
-def refresh_link() -> None:
-    target = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "statusline", "statusline.py"))
+def renderer_path() -> str:
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "statusline", "statusline.py"))
+
+
+def refresh_link() -> str:
+    """Point the stable symlink at this plugin version's renderer and return the
+    command the setting should run. Where a symlink cannot be made (some Windows
+    setups), fall back to the renderer's absolute path — re-pointed every session
+    start, so a plugin update still lands."""
+    target = renderer_path()
     os.makedirs(CAT_DIR, exist_ok=True)
     try:
-        if os.path.islink(LINK) and os.readlink(LINK) == target:
-            return
-        if os.path.lexists(LINK):
-            os.unlink(LINK)
-        os.symlink(target, LINK)
+        if not (os.path.islink(LINK) and os.readlink(LINK) == target):
+            if os.path.lexists(LINK):
+                os.unlink(LINK)
+            os.symlink(target, LINK)
+        if os.path.islink(LINK):
+            return ENTRY["command"]
     except Exception:
         pass
+    return f'python3 "{target}"'
 
 
-def install_setting() -> None:
+def install_setting(command: str) -> str:
+    """Write the statusLine entry once. Returns what happened: 'installed' (first
+    time — the user should hear about it), 'updated' (ours, but the command moved —
+    the no-symlink fallback after a plugin update), 'present' or 'kept' (installed
+    before and removed by the user — never fought)."""
     try:
         settings = {}
         if os.path.exists(SETTINGS):
             with open(SETTINGS, encoding="utf-8") as f:
                 settings = json.load(f)
         current = settings.get("statusLine")
-        if isinstance(current, dict) and "catalyst-claude" in str(current.get("command", "")):
-            return                                  # ours already
-        if os.path.exists(INSTALLED):
-            return                                  # installed once before; the user removed it — respect that
-        if isinstance(current, dict) and str(current.get("command", "")).strip():
+        cur_cmd = str(current.get("command", "")) if isinstance(current, dict) else ""
+        ours = "catalyst-claude" in cur_cmd or "statusline.py" in cur_cmd and "catalyst" in cur_cmd
+        if ours and cur_cmd == command:
+            return "present"
+        if not ours and os.path.exists(INSTALLED):
+            return "kept"                           # installed once before; the user removed it — respect that
+        if not ours and cur_cmd.strip():
             os.makedirs(ROOT, exist_ok=True)
             with open(CHAIN_FILE, "w", encoding="utf-8") as f:
-                json.dump({"command": current["command"], "recorded_at": int(time.time())}, f)
-        settings["statusLine"] = ENTRY
+                json.dump({"command": cur_cmd, "recorded_at": int(time.time())}, f)
+        settings["statusLine"] = dict(ENTRY, command=command)
         tmp = SETTINGS + ".catalyst-tmp"
         os.makedirs(os.path.dirname(SETTINGS), exist_ok=True)
         with open(tmp, "w", encoding="utf-8") as f:
@@ -72,8 +88,9 @@ def install_setting() -> None:
         os.makedirs(ROOT, exist_ok=True)
         with open(INSTALLED, "w") as f:
             f.write(time.strftime("%Y-%m-%dT%H:%M:%S"))
+        return "updated" if ours else "installed"
     except Exception:
-        pass
+        return "error"
 
 
 def touch_state(session_id: str) -> None:
@@ -106,11 +123,15 @@ def main() -> int:
         ev = json.loads(raw) if raw.strip() else {}
     except Exception:
         ev = {}
-    refresh_link()
-    install_setting()
+    outcome = install_setting(refresh_link())
     sid = str(ev.get("session_id") or "").strip()
     if sid:
         touch_state(sid)
+    # Claude Code reads the statusLine setting when it launches, so the line shows
+    # from the NEXT session — say so once, to the person (systemMessage is shown to
+    # the user and adds nothing to the model's context).
+    if outcome == "installed":
+        sys.stdout.write(json.dumps({"systemMessage": "⚡ Catalyst status line installed — it shows from your next Claude Code session."}))
     return 0
 
 
