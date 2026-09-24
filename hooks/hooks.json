@@ -1,12 +1,12 @@
 {
-  "description": "Catalyst plugin hooks: PreToolUse guard + PostToolUse/Stop/UserPromptSubmit event sink + the status line (SessionStart installs it, Pre/PostToolUse feed it) — the status line hooks go through statusline_hook.sh, which runs node where it exists, python3 otherwise, and exits quietly with neither",
+  "description": "Catalyst plugin hooks: PreToolUse guard + PostToolUse/Stop/UserPromptSubmit event sink + the status line (SessionStart installs it, Pre/PostToolUse feed it). The status line entries run `sh statusline_hook.sh …; exit 0`: the launcher picks node, else python3, else nothing; the trailing `exit 0` keeps a machine without `sh` (Windows without Git Bash, where hooks run in PowerShell) quiet too — stderr of a hook that exits 0 goes to the debug log only, never the transcript.",
   "hooks": {
     "SessionStart": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/statusline_hook.sh\" install",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/statusline_hook.sh\" install; exit 0",
             "timeout": 5
           }
         ]
@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/statusline_hook.sh\" capture",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/statusline_hook.sh\" capture; exit 0",
             "timeout": 5
           }
         ]
@@ -48,7 +48,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/statusline_hook.sh\" capture",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/statusline_hook.sh\" capture; exit 0",
             "timeout": 5
           }
         ]
