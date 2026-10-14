@@ -17,7 +17,7 @@ The PRD and repo map are inlined in `kickoff_message`. Don't re-fetch them with 
 ## The contract — what to do, in order
 
 1. **Acknowledge the handoff.** Tell the user the Engineer's on it once — e.g. "On it — building now." Don't repeat it.
-2. **For data work, ask the database knowledge base first.**
+2. **For data work, know which store you are in.** The **Database** (`coding_workspace__app_database`, read live: `mode='tables'` / `'describe'` / `'query'`) is the app's own transactional store — the tables this app creates, migrates and seeds live there, and `coding_workspace__app_database_write` changes it (one transaction; comment every table and column you create). The **Warehouse** below is the org's analytics store — written only by ETL (a scheduled job's dump, a derived reporting table), read by everything else: reuse its data for reports, **never transactional data, never create the app's tables in it**. When no Database is connected yet the build context says so, and the scaffold would point the app at the Warehouse. Before you scaffold an app that stores data, say so and ask: connect a Database first (Setup → Database) if the data is transactional, or proceed — their call, an explicit yes. On yes, build; the day they connect a Database a rebuild moves the tables (nothing re-points a running app).
    - `coding_workspace__db_skill` (`mode='read'`) — the org's business-understanding skill: what the business is, how the tables serve each outcome, hard facts + query learnings. **Read it before the tables** so you build knowing the business, not cold. (Present once business context has been captured; read-only here — the wizard's DB knowledge chat authors it.)
    - `coding_workspace__get_all_db_tables` lists every existing table with its purpose and relationships (supports a `query` regex + paging).
    - `coding_workspace__get_table_detail(table_name)` gives exact column names. **Column names cannot be inferred** — call this before writing any code that touches columns.
@@ -43,11 +43,11 @@ Before emitting the completion JSON:
 
 If the user says "it looks broken" *after* completion, you're already in vibe-edit mode (see [04-vibe-coding.md](04-vibe-coding.md)). Don't re-call `complete_build` for fixes — just edit and tell them.
 
-## Tool-policy enforcement
+## Which hands touch the app
 
-While the Engineer is on it, native tools (Read / Edit / Write / Bash / Grep / etc.) are blocked by Catalyst's policy hook. **Always use `coding_workspace__*` instead.** If the hook blocks you, the error message names the right replacement; follow the redirect.
+Native tools (Read / Edit / Write / Bash / Grep / etc.) are open while the Engineer is on it (since 2026-10-14) — but they act on your companion's own machine. **The app lives on the workspace: always use `coding_workspace__*` for its files, its shell, its tests.** A file written natively lands on the laptop and never reaches the build. To pull a local file into the build, `upload_to_workspace` and run the curl it returns.
 
-The allowlist still includes `TodoWrite`, `AskUserQuestion`, `Skill`, `SlashCommand`, `ToolSearch` — so clarifying questions still work normally. Plan mode (`EnterPlanMode`/`ExitPlanMode`) is denied while a Catalyst session is live.
+Plan mode (`EnterPlanMode`/`ExitPlanMode`) is denied while a Catalyst session is live — the PRD is the plan.
 
 ## Persistence is automatic
 
@@ -59,7 +59,7 @@ If the user asks "did that get saved?" the answer is always yes.
 
 | Symptom | What to do |
 |---|---|
-| `coding_workspace__*` returns "no active build session" / "no bound tools" | The session marker dropped (e.g. Catalyst restarted). `current_session` — if it still shows the Mindspace, `start_app_building` re-binds your current one. If not, `list_mindspaces` → `switch_mindspace(target_session_id=<id>)` to re-activate that Mindspace, then continue. |
+| `coding_workspace__*` returns "no active build session" / "no bound tools" | The session marker dropped (e.g. Catalyst restarted). `current_session` — if it still shows the Mindspace, `start_app_building` re-binds your current one. If not, `list_mindspaces` → `switch_mindspace(target=<name or id>)` to re-activate that Mindspace, then continue. |
 | A `coding_workspace__bash` returns "fatal" after retries | Something broke between Catalyst and the workspace. Tell the user, then re-call the same tool — it will rebuild the connection automatically. If it fails twice, point them at the Cloud step in the app. |
 | A tool call hangs for >2 minutes | Move on. The skill stays alive; tell the user "that step's taking longer than usual — let me know if you want me to retry or skip it." |
 

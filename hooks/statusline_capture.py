@@ -10,6 +10,12 @@
 
 Portable: no fcntl (Windows has none) — the record is replaced atomically instead,
 as supermemory does. Always exits 0.
+
+THIRD TWIN: the server counts the same events per PERSON across sessions for the
+Company Overview tab — catalyst-builder/backend/wingman_events.py::classify is a
+line-for-line port of _on_post below. Change a rule here, change it there (and in
+statusline_capture.js); tests/test_wingman_events_golden.py replays one golden set
+through both.
 """
 from __future__ import annotations
 

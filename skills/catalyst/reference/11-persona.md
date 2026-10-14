@@ -4,7 +4,7 @@
 
 ## The idea
 
-Knowing *about* your companion is table stakes. The moat is knowing **how they work** — how they think, decide, communicate and get things done — until you can anticipate how they would approach the work and help them do it faster and better. That is what `user_persona` holds: one core doc (the crux, in fixed sections) plus references (depth). You read it at orient, alongside the Company Brain; you write it the same session you learn something.
+Knowing *about* your companion is table stakes. The moat is knowing **how they work** — how they think, decide, communicate and get things done — until you can anticipate how they would approach the work and help them do it faster and better. That is what `user_persona` holds: one core doc (the crux, in fixed sections) plus references (depth). You read it at orient, alongside the Company Brain; you write it the same session you learn something. Two sections carry the most weight: their **mission** (what they are accountable for, how it is measured, where it stands — every session opens there and closes by updating it) and **their expertise map** (a simple mindmap, theirs only: what they bring and whose expertise they draw on, the word they use and the trap they watch on a leaf — the lens an answer passes through to be fast and right). Where they sit in the company is not a section: it arrives with every landing as `directory_block`.
 
 ## The first meeting — when there is nothing yet
 
@@ -13,15 +13,17 @@ An empty persona is not a problem to fix before the work. It is the first sessio
 - **Never announce it.** Not *"your persona is empty"*, not *"let me learn about you first"*, not *"I've noted that"*. The words persona / profile / record never reach them.
 - **Never interview.** No list of questions, no *"tell me about your role"*. One natural question, only when the work itself needs it — *"is this your call, or are you looking at it for someone?"*, *"who's reading this — leadership or your team?"* — and the answer goes into the persona, not into a follow-up question.
 - **The work reveals them.** Their first real ask alone tells you what they own, what they chase, how they phrase things and who they name; how they react to your first draft tells you how they like things shaped. Watch for it; don't ask for it.
-- **Write after the first exchange**, even if only *Role & responsibilities*, *What they're driving now* and *Open questions* have anything — a two-section persona after session one beats a perfect one never written. Open questions close one at a time, later, when the moment fits.
+- **Write after the first exchange**, even if only *Mission & priorities*, *Role & responsibilities* and *Open questions* have anything — a two-section persona after session one beats a perfect one never written. Open questions close one at a time, later, when the moment fits.
 - **Personality shows as anticipation.** The second session opens already knowing what they're on, shaped the way they liked it last time. That is what makes them feel known — never a recap of what you have stored.
+- **Teach one thing at the moment it becomes real — once, one line, never a tour.** The landing's `firsts` says which are still ahead (a zero). The first meeting carries the promise in its greeting (*"Whatever we work on, I keep in a Mindspace for that problem, so nothing we learn is lost."*); their first Mindspace: *"I've started a Mindspace for this, Rider payouts. It's where I keep what we learn and build here, so it's ready next time; ask for it by name whenever you want to pick it up."*; their first share: *"Shared with Nina. Her Wingman can now read and work in Rider payouts."*; their first trusted expertise: *"Rider payouts is now company expertise. Any colleague's Wingman can build on it, credited to you."* The ScratchPad is never explained — they never need to know it exists.
 
-## The sixteen sections — what to capture, and the signal that reveals it
+## The seventeen sections — what to capture, and the signal that reveals it
 
 | Section | Capture | You learn it when… |
 |---|---|---|
+| Mission & priorities | what they are accountable for · how it is measured · where it stands · the key outcomes landed · what matters now and the year's bets | what they ask about first; what they chase within a day; what they let slide; every outcome that lands |
+| Their expertise map | a simple mindmap, theirs only: what they bring (area → what they know; the word they use and the trap they watch on a leaf) · what they draw on (a colleague's expertise → whose → for what) — outward, other Wingmen see it | they correct a term; they catch a trap before you do; they reach for a colleague's expertise; a skill of theirs is read by others |
 | Role & responsibilities | what they own · what success looks like · which decisions sit with them | they say "that's mine" / "that's X's call"; who they escalate to |
-| Goals & priorities | the outcomes, KPIs and commitments that matter NOW; the year's bets | what they ask about first; what they chase within a day; what they let slide |
 | What they're driving now | Mindspaces, initiatives, PRDs in flight, one line each | every Mindspace entry and PRD save |
 | How they decide | how they weigh trade-offs · evidence they trust vs distrust · fast vs deep · what earns a yes | they accept or challenge a number; they pin a figure and ask for the gap; they say "just do it" vs "show me" |
 | How they solve problems | the steps, frameworks, heuristics, patterns they reach for repeatedly | the second time they do something the same way — that's a pattern, write it |
@@ -33,7 +35,7 @@ An empty persona is not a problem to fix before the work. It is the first sessio
 | What happened before | past decisions and why · what was tried · what failed and taught | "we tried that in June"; a reversal; a dead end they mention |
 | Judgment & taste | what they consider good · what they reject · the subtle preferences behind their choices | every edit, every "not like this", every "yes, exactly" |
 | When to push back | blind spots · how they take challenge · when to flag risk or ask them to reconsider | they thank you for a catch — or brush one off; where their figure and the data disagree |
-| What you may do on your own | autonomous · needs a nod · always reviewed — and the correction that drew each line | "ask me before…"; "you don't need to check that"; the first time they undo something you did |
+| What you may do on your own | the ladder's ledger: autonomous · needs a nod · always reviewed — and the correction that drew each line; a nod given a few times for the same kind of step becomes standing permission here, with a receipt to them | "ask me before…"; "you don't need to check that"; the first time they undo something you did; the third nod for the same step |
 | Open questions | what you still don't know that would change how you help | anything above you had to guess |
 | Routing table | managed — one row per reference | written for you |
 
@@ -46,9 +48,9 @@ An empty persona is not a problem to fix before the work. It is the first sessio
 
 ## How it moves
 
-- **Orient:** read the core doc (it arrives as `persona_block` on every Mindspace entry). Before shaping an output, look at *How they like things* and *How they communicate*; before recommending, *How they decide* and *Judgment & taste*; before acting alone, *What you may do on your own*; before raising anything, *Their people*.
-- **Reflect (the Curator):** every correction, edit to your draft, approval, rejection and decision is a data point. Write the **pattern, not the incident** — *"wants the denominator beside every rate"*, not *"on 8 Sep he asked for the DAU denominator"*. The incident can go to *What happened before* if it matters later.
-- **Depth → references** (`write_reference`, `NN-kebab`, with a `condition`): a stakeholder map, a decision log, a quarter's plan, their tracker style (`NN-tracker-style`), how they write to leadership. The core doc stays the crux.
+- **Orient:** read the core doc (it arrives as `persona_block` on every Mindspace entry) — *Mission & priorities* first, so every move is judged by it. Before answering in their area, *Their expertise map* (their words, their traps); before shaping an output, *How they like things* and *How they communicate*; before recommending, *How they decide* and *Judgment & taste*; before acting alone, *What you may do on your own*; before raising anything, *Their people*.
+- **Reflect (the Curator):** every correction, edit to your draft, approval, rejection and decision is a data point. Write the **pattern, not the incident** — *"wants the denominator beside every rate"*, not *"on 8 Sep he asked for the DAU denominator"*. The incident can go to *What happened before* if it matters later. **Reflect evolves you, not just the Mindspace:** a word they use, a trap they watch, a colleague's expertise they drew on go onto their expertise map (and the term or trap into the Mindspace skill too — every Wingman gets it, theirs gets it first); where their mission stands is updated every session; a standing permission lands in *What you may do on your own* with a receipt to them.
+- **Depth → references** (`write_reference`, `NN-kebab`, with a `condition`): a stakeholder map, a decision log, a quarter's plan, their tracker style (`NN-tracker-style`), the expertise map when it outgrows its lines (`NN-expertise-map`), how they write to leadership. The core doc stays the crux.
 - **Ask what you can't observe.** *Open questions* is a list to close in conversation, one at a time, when the moment fits — never a questionnaire.
 
 ## Rules
@@ -57,4 +59,4 @@ An empty persona is not a problem to fix before the work. It is the first sessio
 - The second observation makes a pattern; a single event is a note in *What happened before* or an open question.
 - A correction lands in the persona the same session, in the section it belongs to; the next session starts already fixed.
 - Never speculate to fill a section. An empty section with an open question beats an invented one.
-- Nobody else's persona is reachable; theirs is theirs. Keep it about how they work with the company and with you.
+- Nobody else's persona is reachable; theirs is theirs. Keep it about how they work with the company and with you. The outward sections — mission, expertise map, role, what they know, what they're driving, their people — are what the Company Directory reads to place them, so other Wingmen see a person's expertise through that lens; everything else never leaves their workspace.

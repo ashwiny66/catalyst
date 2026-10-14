@@ -183,10 +183,13 @@ ALLOW_EXACT = {
 # start_app_building. (Agent is native ALLOW_EXACT — never touched by this gate, so it
 # stays available in every mode incl. Discover; plan mode is denied in Case 2.)
 _CODING_WS_MARKER = "coding_workspace__"
-_DENIED_BY_MODE = {
-    "deep_analysis": {"write", "edit", "playwright_test", "save_prd"},
-    "spec": {"write", "edit", "bash", "playwright_test"},
-}
+# EMPTY since 2026-10-14 (user: "make native and all tools available to all gears").
+# A mode is a stance the Wingman takes — investigate, plan, build — never a tool
+# surface: every coding_workspace__* tool is open in every mode. The Analyst's
+# "changes nothing, ships nothing" and the PM's "shapes, doesn't build" are skill
+# rules now, not hook denies. Mirrors mode_controller.DENIED (also empty). The
+# machinery stays so a per-mode deny can be re-introduced with one line.
+_DENIED_BY_MODE: dict = {}
 
 # Modes where native FS/shell (Read/Write/Edit/Bash/Grep/Glob) stays BOUND to the
 # remote workspace (redirected to coding_workspace__*). These are the Engineer's
@@ -195,7 +198,14 @@ _DENIED_BY_MODE = {
 # the Curator, and menu) gets native tools OPEN so those employees can work with the
 # user's local files (restored 2026-07-23; the pre-2026-06-09 behaviour). Native web
 # (WebFetch/WebSearch) + the upload/download transfer curl stay allowed in ALL modes.
-_WORKSPACE_BOUND_MODES = {"coding", "vibe_code"}
+#
+# EMPTY since 2026-10-14 (the same user decision): native tools are open in EVERY
+# mode, Build included — native Read/Write/Edit/Bash act on the LAPTOP, the app
+# lives on the workspace and goes through coding_workspace__* (a skill rule, no
+# longer a hook deny). The external-MCP gate below keys on the same set, so
+# external MCPs are open in Build too. Restore {"coding", "vibe_code"} to bring
+# either guard back (the deny branches and their reason texts are kept intact).
+_WORKSPACE_BOUND_MODES: set = set()
 
 # Claude Code's native plan mode. Denied while this tab has a Catalyst row (any
 # mode): the Wingman has ONE planning artefact — the PRD the PM shapes in

@@ -67,10 +67,11 @@ pre(cat("health_check"))
 check("1 registered, unbound → external MCP", pre(EXTERNAL), "allow")
 check("1 registered, unbound → native Read", pre("Read", {"file_path": "/x"}), "allow")
 
-# 2. Bind a Mindspace in Build: external MCPs denied, native FS redirected.
+# 2. Bind a Mindspace in Build: since 2026-10-14 (every tool in every gear) external
+#    MCPs and native FS stay OPEN here too — the app-on-the-workspace rule is the skill's.
 post("start_app_building", {"session_id": SID, "app_root": "/p/x", "gen_stream_id": "g:1:2", "mode": "coding"})
-check("2 bound (coding) → external MCP", pre(EXTERNAL), "deny")
-check("2 bound (coding) → native Read", pre("Read", {"file_path": "/x"}), "deny")
+check("2 bound (coding) → external MCP", pre(EXTERNAL), "allow")
+check("2 bound (coding) → native Read", pre("Read", {"file_path": "/x"}), "allow")
 
 # 3. The teammate's flow: switch_mindspace with no target clears the binding but keeps the row.
 post("switch_mindspace", {"status": "ready_for_new", "paused": {"paused": True}, "pause_after_complete": True})
@@ -87,9 +88,9 @@ post("start_spec", {"session_id": SID, "app_root": "/p/x", "gen_stream_id": "g:1
 check("5 bound (spec) → native Read", pre("Read", {"file_path": "/x"}), "allow")
 check("5 bound (spec) → external MCP", pre(EXTERNAL), "allow")
 
-# 6. Back into a Build: both denied again; finishing the build (binding KEPT, mode=menu) reopens them.
+# 6. Back into a Build: still open; finishing the build (binding KEPT, mode=menu) keeps them open.
 post("start_app_building", {"session_id": SID, "app_root": "/p/x", "gen_stream_id": "g:1:5", "mode": "coding"})
-check("6 bound (coding) → external MCP", pre(EXTERNAL), "deny")
+check("6 bound (coding) → external MCP", pre(EXTERNAL), "allow")
 post("complete_build", {"status": "completed", "already_completed": False, "pause_after_complete": True})
 check("6 after complete_build → external MCP", pre(EXTERNAL), "allow")
 
@@ -102,4 +103,4 @@ if failures:
     for f in failures:
         print("FAIL:", f)
     sys.exit(1)
-print("ALL PASS — external MCPs follow the Build switch: denied only in coding/vibe_code, open everywhere else")
+print("ALL PASS — external MCPs and native tools are open in every gear, Build included (2026-10-14)")

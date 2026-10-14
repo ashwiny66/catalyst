@@ -19,6 +19,12 @@
  * session as slug → name. Registered in hooks.json with the matcher
  * `mcp__.*catalyst-mcp__.*` so it runs only for Catalyst tools. Node so that it
  * runs on Windows too (python3 is not a command there). Always exits 0.
+ *
+ * THIRD TWIN: the server counts the same events per PERSON across sessions for the
+ * Company Overview tab — catalyst-builder/backend/wingman_events.py::classify is a
+ * line-for-line port of onPost below. Change a rule here, change it there (and in
+ * statusline_capture.py); tests/test_wingman_events_golden.py replays one golden set
+ * through both.
  */
 const crypto = require('node:crypto');
 const fs = require('node:fs');

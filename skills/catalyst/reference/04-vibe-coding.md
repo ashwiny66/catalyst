@@ -43,7 +43,7 @@ If the user wants a genuinely *new* Mindspace, that's the moment for `switch_min
 If the user's session restarts (closed terminal, etc.):
 
 1. Call `current_session` — if it still tracks the project, `start_app_building` continues it (the plugin keeps the id; you don't pass one).
-2. If not, run `list_mindspaces`, find the one they want, and `switch_mindspace(target_session_id=<id>)` to re-activate it — then the next transition continues it. (You can't target a Mindspace through a transition; `switch_mindspace` is the only way to point at a specific one. After a clean restart there's nothing active to leave, so the confirm is a no-op.)
+2. If not, run `list_mindspaces`, find the one they want, and `switch_mindspace(target=<name or id>)` to re-activate it — then the next transition continues it. (You can't target a Mindspace through a transition; `switch_mindspace` is the only way to point at a specific one. After a clean restart there's nothing active to leave, so the confirm is a no-op.)
 
 ## When to call `complete_build` vs `abandon_build` vs nothing
 

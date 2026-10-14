@@ -2,21 +2,21 @@
 
 > Loaded on demand. SKILL.md keeps the lifecycle tools (flow control) + the behavioral one-liners; this is the full per-tool reference. **The live MCP tool schemas (name / args / description) always reach you at call time** — this file is the at-a-glance map of what the surface holds and which employee unlocks what.
 
-## The model: one surface, the employee narrows it
+## The model: one surface, every gear has all of it
 
-All three employees — the Analyst, the PM, the Engineer — work the **same** `coding_workspace__*` tool surface (the FDE union). You don't switch namespaces; who's on it decides which tools on that surface are live. The PreToolUse hook enforces the per-employee deny-set (the sentinel `mode` is the internal switch), mirroring the FDE `ModeController.DENIED`:
+All three gears — the Analyst, the PM, the Engineer — work the **same** `coding_workspace__*` tool surface (the FDE union), whole. Since 2026-10-14 nothing is denied by gear: the sentinel `mode` records the stance, not a tool set, and the FDE `ModeController.DENIED` and the plugin hook's mirror are both empty. What each gear reaches for is discipline:
 
-| Employee (sentinel `mode`) | Denied on the surface | Net usable surface |
+| Gear (sentinel `mode`) | Reaches for | Leaves alone, by discipline |
 |---|---|---|
-| **The Analyst** (`deep_analysis`) | `write`, `edit`, `playwright_test`, `save_prd` | investigate + store the plan: read/grep/find + KB + `run_select_query` + `run_python` + **`bash`** (open here so the plan persists in the Mindspace) |
-| **The PM** (`spec`) | `write`, `edit`, `bash`, `playwright_test` | the same set **minus `bash`, plus `save_prd`** (author the plan) |
-| **The Engineer** (`coding` / `vibe_code`) | — nothing — | the full surface (read, write, edit, bash, playwright, automation…) |
+| **The Analyst** (`deep_analysis`) | read/grep/find + KB + `run_select_query` + `run_python` + `bash` (the plan persists in the Mindspace) | `write`, `edit`, `playwright_test`, `save_prd` — it investigates, it doesn't make |
+| **The PM** (`spec`) | the same **plus `save_prd`** (author the plan) and `todos` | the build actions — it shapes, it doesn't build |
+| **The Engineer** (`coding` / `vibe_code`) | the full surface (read, write, edit, bash, playwright, automation…) | — |
 
-You never check the mode yourself. A blocked tool's error names the transition to call (`start_app_building` to bring in the Engineer, etc.). The transitions (`start_analysis` / `start_spec` / `start_app_building`) open and close these sets — see [00-flow-and-tools.md](00-flow-and-tools.md).
+You never check the mode yourself; the transitions (`start_analysis` / `start_spec` / `start_app_building`) record the stance — see [00-flow-and-tools.md](00-flow-and-tools.md).
 
-**Native host tools** are mostly OFF while any session is live — `Read`/`Write`/`Edit`/`Bash`/`Grep`/`Glob`/`WebFetch`/`WebSearch` are redirected to their `coding_workspace__*` equivalent whoever's on it. Carve-outs available for **every** employee including the Analyst: native **`Agent`** (parallel sub-tasking) plus `TodoWrite`/`AskUserQuestion`/`Skill`/`SlashCommand`/`ToolSearch`. Plan mode (`EnterPlanMode`/`ExitPlanMode`) is **blocked** while a session is live — the PM shapes the PRD in conversation and tracks it as a ToDo; there is nothing for plan mode to do. Note `coding_workspace__bash` is open for **the Analyst** too (so the working plan persists in the Mindspace) — native `Bash` just routes there; there's no laptop-local shell carve-out.
+**Native host tools are open in every gear** — `Read`/`Write`/`Edit`/`Bash`/`Grep`/`Glob`/`WebFetch`/`WebSearch`, native **`Agent`**, `TodoWrite`/`AskUserQuestion`/`Skill`/`SlashCommand`/`ToolSearch`. They act on your companion's own machine; the app and the Mindspace's files live on the workspace and go through `coding_workspace__*` (a file written natively lands on the laptop, not in the app). Plan mode (`EnterPlanMode`/`ExitPlanMode`) stays **blocked** while a session is live — the PM shapes the PRD in conversation and tracks it as a ToDo; there is nothing for plan mode to do.
 
-**External MCP servers are blacklisted** while a Catalyst session is active — a connected Redshift / Slack / Notion MCP is denied with a redirect. Strict allow-list: only the Catalyst surface + the few native tools above. Do the work with the Catalyst tools.
+**External MCP servers are open in every gear** too — a connected Redshift / Slack / Notion MCP is your companion's own tool. For the company's data and the app, the Catalyst tools are the hands that touch the right place.
 
 ## Read & understand — live for **every** employee
 
@@ -32,8 +32,9 @@ You never check the mode yourself. A blocked tool's error names the transition t
 | `get_table_detail` | The exact columns + types of specific tables — **column names can't be inferred**; read this before any query/code that touches columns. |
 | `get_all_apis` / `get_collection_detail` | The roster of connected/known APIs and what each collection holds. |
 | `get_api_endpoint_detail` | The precise request/response shape of specific endpoints. |
-| `run_select_query` | Read-only SELECT (SELECT/WITH/EXPLAIN, mandatory `LIMIT`, 50-row cap) against their live DB (mysql/postgres/redshift, via-cloud or direct). Verify a table has rows, confirm an enum's values, sanity-check a query before coding against its shape. |
-| `run_python` | Your notebook: pandas/numpy + a read-only `query(sql)→DataFrame`. `df = query("SELECT …")`, then compute — cohorts, distributions, trends, outliers. **State persists across calls.** `mode='interrupt'` aborts a hanging cell (keeps your namespace); `mode='restart'` bounces with explicit `max_mem_mb` (clears namespace, bounds the next workload so a runaway can't take down the EC2). |
+| `run_select_query` | **The Warehouse, read** — the org's analytics store, written only by ETL (a job's dump, a derived reporting table), never by an app's transactions; this tool reads it. SELECT/WITH/EXPLAIN, mandatory `LIMIT`, 50-row cap (mysql/postgres/redshift, via-cloud or direct). Answer a question from the data; never where an app keeps its rows. |
+| `app_database` | **The app Database, read live** — the transactional store the apps Catalyst builds read and write. `mode='tables'` (every table · its comment · cols · ~rows), `'describe'` (one table's columns, keys, comments), `'query'` (a SELECT with a LIMIT). No snapshot: a column added a moment ago is there on the next call. |
+| `run_python` | Your notebook: pandas/numpy + a read-only `query(sql)→DataFrame` on the Warehouse and `app_query(sql)` on the app Database. `df = query("SELECT …")`, then compute — cohorts, distributions, trends, outliers. **State persists across calls.** `mode='interrupt'` aborts a hanging cell (keeps your namespace); `mode='restart'` bounces with explicit `max_mem_mb` (clears namespace, bounds the next workload so a runaway can't take down the EC2). |
 | `grep_database_context_files` / `grep_api_context_files` | Search the DB / API docs the user uploaded — the source the schema + API roster were built from. |
 
 ## Plan — the PM & the Engineer
@@ -45,10 +46,11 @@ You never check the mode yourself. A blocked tool's error names the transition t
 
 ## Make & change — the Engineer (with one Analyst exception, `bash`)
 
-`write` / `edit` / `playwright_test` are **Engineer-only** (denied for the Analyst & PM). `bash` is the exception: it's open for **the Engineer** *and* **the Analyst** (for the Analyst only to store the plan / script the investigation — not to make a web app; that boundary is instruction-side). It stays denied for **the PM**.
+`write` / `edit` / `playwright_test` are **the Engineer's by discipline** — open to every gear, reached for only when building. `bash` serves the Analyst too (to store the plan / script the investigation — not to make a web app). None of this is a hook deny any more; the boundary is instruction-side.
 
 | Tool | Purpose |
 |---|---|
+| `app_database_write` | **The writing hand on the app Database** — INSERT/UPDATE/DELETE and DDL on the tables the app owns, one transaction, rows affected back (RETURNING rows too). Comment every table and column you create in the same batch. Denied for the Analyst and the PM; never the Warehouse. |
 | `write` | Create or overwrite. Paths relative to `app_root`. (Engineer only) |
 | `edit` | Find-and-replace edit. (Engineer only) |
 | `bash` | Run a shell command in the project workspace (Engineer **and** Analyst). The dev server is already up — don't reinstall deps or kick off long builds. For the Analyst, use it to persist your working plan in the Mindspace. |
