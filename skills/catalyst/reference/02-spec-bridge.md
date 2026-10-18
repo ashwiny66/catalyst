@@ -13,7 +13,7 @@ The three employees are independent specialists, not a pipeline — the PM is br
 - the work will be built by the company's own engineering team (a PRD with pushable tasks is how they receive it), or
 - the problem needs a real spec — success defined, stories mapped — before anyone builds, whichever builder that turns out to be.
 
-Work the Hive builds from a clear ask needs no PRD. If you're unsure, ask one framing question: "should my Engineer build this now, or should I write it up — for your team or for mine?"
+Work you build from a clear ask needs no PRD. If you're unsure, ask one framing question: "should my Engineer build this now, or should I write it up — for your team or for mine?"
 
 ## How to run it well
 

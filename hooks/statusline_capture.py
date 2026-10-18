@@ -113,6 +113,9 @@ def _pre_label(st: dict, bare: str, args: dict):
     if bare == "read_org_skill":
         who = _owner_for(st, str(args.get("mindspace") or ""))
         return f"reaching {who}'s Wingman" if who else "reaching a colleague's Wingman"
+    if bare == "ask_wingman":
+        who = str(args.get("person") or "").strip()
+        return f"reaching {who}'s Wingman" if who else "reaching a colleague's Wingman"
     if bare == "mindspace_skill":
         return "Learning expertise" if mode in WRITE_SKILL else "recalling this Mindspace's expertise"
     if bare == "mindspace_memory":
@@ -173,6 +176,13 @@ def _on_post(st: dict, bare: str, args: dict, resp) -> None:
         st["recovered"] = int(st.get("recovered") or 0) + 1
         st.setdefault("wingmen", {})[who or slug] = _now_ms()
         st["last_from"] = {"label": f"from {who}'s Wingman" if who else "from a colleague's Wingman", "at": _now_ms()}
+    elif bare == "ask_wingman" and ok:
+        # The colleague's Wingman answered: it joins the Wingmen reached. Nothing is "recovered"
+        # here — the server books the answer itself (wingman_events kind wingman_answer).
+        m = re.search(r"Reached (.{1,60}?)'s Wingman\.", text)   # after any "Asked X's Wingman — no answer."
+        if m:
+            st.setdefault("wingmen", {})[m.group(1)] = _now_ms()
+            st["last_from"] = {"label": f"from {m.group(1)}'s Wingman", "at": _now_ms()}
     elif bare == "mindspace_skill":
         if mode in WRITE_SKILL and ok:
             _learn(st, "expertise", "learned expertise")

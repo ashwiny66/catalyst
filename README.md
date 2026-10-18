@@ -6,7 +6,7 @@ where your company's know-how compounds instead of evaporating.
 Today every solved problem ends up in someone's head or a dead chat log,
 and the next team starts from zero. Catalyst turns each one into proven,
 trust-scored intelligence the whole company can draw on. The compounding
-is the point: the organisation gets permanently smarter, the hive takes
+is the point: the organisation gets permanently smarter, Catalyst takes
 on more of the work it has already learned, and your people stay on the
 frontier instead of re-solving what's known.
 

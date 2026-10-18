@@ -50,7 +50,7 @@ You never check the mode yourself; the transitions (`start_analysis` / `start_sp
 
 | Tool | Purpose |
 |---|---|
-| `app_database_write` | **The writing hand on the app Database** — INSERT/UPDATE/DELETE and DDL on the tables the app owns, one transaction, rows affected back (RETURNING rows too). Comment every table and column you create in the same batch. Denied for the Analyst and the PM; never the Warehouse. |
+| `app_database_write` | **The writing hand on the app Database** — INSERT/UPDATE/DELETE and DDL on the tables the app owns, one transaction, rows affected back (RETURNING rows too). Comment every table and column you create in the same batch. The Engineer's hand — the Analyst and the PM leave it alone by discipline; never the Warehouse. |
 | `write` | Create or overwrite. Paths relative to `app_root`. (Engineer only) |
 | `edit` | Find-and-replace edit. (Engineer only) |
 | `bash` | Run a shell command in the project workspace (Engineer **and** Analyst). The dev server is already up — don't reinstall deps or kick off long builds. For the Analyst, use it to persist your working plan in the Mindspace. |
@@ -64,7 +64,7 @@ The making surface also carries the automation families (one executable protocol
 |---|---|
 | Jobs (non-AI shell/http) | `create_job_scaffold`, `edit_job`, `delete_job`, `list_jobs`, `run_job` |
 | Schedules (the cron registry) | `add_schedule`, `edit_schedule`, `delete_schedule`, `list_schedules` |
-| Triggers (webhook/manual → fan out; `?wait=1` returns an AI Employee's answer; every org has `ask-the-hive` → the Hive Analyst) | `create_trigger`, `edit_trigger`, `delete_trigger`, `list_triggers`, `fire_trigger` |
+| Triggers (webhook/manual → fan out; `?wait=1` returns an AI Employee's answer) | `create_trigger`, `edit_trigger`, `delete_trigger`, `list_triggers`, `fire_trigger` |
 | Trigger Services (reach an employee from Slack/…; a message = a trigger fire, answer back in-thread) | `list_trigger_services` (read first), `wire_trigger_service`, `unwire_trigger_service`; or `create_trigger(service=, conversation=)` to create + wire at once |
 | Subagents (autonomous AI checks) | `create_subagent_scaffold`, `edit_subagent`, `delete_subagent`, `list_subagents`, `run_subagent` |
 | Connected external tools | `external_tools_discover`, `external_tools_execute` |
@@ -78,6 +78,8 @@ The making surface also carries the automation families (one executable protocol
 | `Agent` (`coding_workspace__Agent`, or native `Agent`) | Spawn a side investigation in parallel — read-heavy questions ("read these 6 files and tell me which import the deliveries model"). Keep *writes* in the main flow so they land in order. |
 | `mindspace_skill` / `mindspace_memory` | THIS Mindspace's durable skill + living memory. Read/recall on entry; write the moment you learn. (Bound for the Analyst + Engineer.) |
 | `user_persona` | Your companion's working model — how they work, not just who they are: role, goals, how they decide and solve problems, what they know, how they like things shaped, how they communicate, their people, rhythm, history, judgment, when to push back, what you may do alone (`read` / `write` / `write_reference` / `list`; the crux arrives as `persona_block` on entry). Learn from every correction, edit, approval, rejection and decision (`reference/11-persona.md`). An empty read is a **first meeting**: greet them as one and learn them through the work — never announce it, never interview. Their **tracker style** lives in its `NN-tracker-style` reference: read it before filing in the org's project-management tool; update it after every filing and whenever the tool differs from what you filed. |
+| `ask_wingman` | Ask a colleague's Wingman (only when `orient_via` is `wingman`): `question`, optional `person` (name, email or Wingman ID; empty = the Wingman router finds whose trusted expertise holds it and tries up to three Wingmen until one has it). Returns the way, where to look (read lines) and the gotchas — the work stays yours. The colleagues can see the conversation. Each reply ends with that Wingman's direct line (name + Wingman ID): ask it again by name for any clarification — the conversation carries on. |
+| `correct_wingman_route` | After an `ask_wingman` miss — or an answer your companion overrode — record who actually held it — `actual` = a name, email or Wingman ID, or `"nobody"` (+ an optional `note`). The Curator's call, once the conversation settles it (`reference/09-curator-reflect.md`). |
 | `todos` | The company's one shared ToDo list — `list` / `show` (one row in full) / `create` (clarification · request) / `answer` / `update` / `close` / `comment` / `people` (user_ids for deterministic assignment) / `tracker` + `tracker_set` (the org's project-management tool and its filing convention) / `track` + `subtasks` + `subtask_update` (the tool's tasks a row is tracked with — link + status, shown inside the ToDo). Rules: `reference/10-todos.md`. |
 
 > `manage_crons` is **gone** — scheduling moved to the unified jobs + schedules + triggers + subagents families above. An older `playwright_flow` JSON-step shortcut was also removed; `playwright_test` covers everything it could.

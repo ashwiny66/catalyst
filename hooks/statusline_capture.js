@@ -98,6 +98,7 @@ function preLabel(st, name, args) {
   switch (name) {
     case 'enterprise_trusted_skills': return "reaching the company's Wingmen";
     case 'read_org_skill': { const who = ownerFor(st, String(args.mindspace || '')); return who ? `reaching ${who}'s Wingman` : "reaching a colleague's Wingman"; }
+    case 'ask_wingman': { const who = String(args.person || '').trim(); return who ? `reaching ${who}'s Wingman` : "reaching a colleague's Wingman"; }
     case 'mindspace_skill': return WRITE_SKILL.has(mode) ? 'Learning expertise' : "recalling this Mindspace's expertise";
     case 'mindspace_memory': return mode === 'save' ? 'Recording memories' : mode === 'forget' ? 'pruning a memory' : 'recalling memories';
     case 'user_persona': return mode.startsWith('write') ? 'Learning how you work' : 'reading how you work';
@@ -148,6 +149,15 @@ function onPost(st, name, args, resp) {
     st.wingmen = st.wingmen || {};
     st.wingmen[who || slug] = nowMs();
     st.last_from = { label: who ? `from ${who}'s Wingman` : "from a colleague's Wingman", at: nowMs() };
+  } else if (name === 'ask_wingman' && ok) {
+    // The colleague's Wingman answered: it joins the Wingmen reached. Nothing is "recovered"
+    // here — the server books the answer itself (wingman_events kind wingman_answer).
+    const m = /Reached (.{1,60}?)'s Wingman\./.exec(text);   // after any "Asked X's Wingman — no answer."
+    if (m) {
+      st.wingmen = st.wingmen || {};
+      st.wingmen[m[1]] = nowMs();
+      st.last_from = { label: `from ${m[1]}'s Wingman`, at: nowMs() };
+    }
   } else if (name === 'mindspace_skill') {
     if (WRITE_SKILL.has(mode) && ok) learn(st, 'expertise', 'learned expertise');
     else if (READ_SKILL.has(mode) && ok) st.recovered = (Number(st.recovered) || 0) + 1;
