@@ -4,7 +4,7 @@
 
 ## What "vibe-edit" means here
 
-After `complete_build` runs, the project's status flips to "completed" but the session is **not closed** — this tab stays bound to the same Mindspace, so the Curator's reflect (skill, memory, persona) and any "resume" land in it. Do NOT call `start_app_building` to "reopen" a finished build — you are already in it; a *different* Mindspace is one deliberate step away via `switch_mindspace`. You can keep using `coding_workspace__*` tools to make changes. Every change continues to land in the same project history the wizard's ChatPane is reading. The running app updates live — typically the user just refreshes their preview tab and sees the change.
+After `complete_build` runs, the project's status flips to "completed" but the session is **not closed** — this tab stays bound to the same Mindspace, so the Curator's reflect (skill, memory) and any "resume" land in it. Do NOT call `start_app_building` to "reopen" a finished build — you are already in it; a *different* Mindspace is one deliberate step away via `switch_mindspace`. You can keep using `coding_workspace__*` tools to make changes. Every change continues to land in the same project history the wizard's ChatPane is reading. The running app updates live — typically the user just refreshes their preview tab and sees the change.
 
 The only practical difference between a fresh Engineer handoff and vibe-editing:
 
