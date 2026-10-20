@@ -4,9 +4,9 @@
 
 ## What "vibe-edit" means here
 
-After `complete_build` runs, the project's status flips to "completed" but the session is **not closed** — this tab stays bound to the same Mindspace, so the Curator's reflect (skill, memory) and any "resume" land in it. Do NOT call `start_app_building` to "reopen" a finished build — you are already in it; a *different* Mindspace is one deliberate step away via `switch_mindspace`. You can keep using `coding_workspace__*` tools to make changes. Every change continues to land in the same project history the wizard's ChatPane is reading. The running app updates live — typically the user just refreshes their preview tab and sees the change.
+After `complete_build` runs, the project's status flips to "completed" but the session is **not closed** — this tab stays bound to the same Mindspace, so the Curator's reflect (skill, memory) and any "resume" land in it. Do NOT call `start_app_building` to "reopen" a finished build — you are already in it; a *different* Mindspace is one deliberate step away via `focus_on_expertise`. You can keep using `coding_workspace__*` tools to make changes. Every change continues to land in the same project history the wizard's ChatPane is reading. The running app updates live — typically the user just refreshes their preview tab and sees the change.
 
-The only practical difference between a fresh Engineer handoff and vibe-editing:
+The only practical difference between a fresh build and vibe-editing:
 
 - In a fresh build, you start from a kickoff message that includes the full PRD + repo map.
 - In vibe-edit, you don't get a fresh kickoff. The user describes the change they want and you use the tools (`coding_workspace__get_repo_map`, `coding_workspace__get_prd`, `coding_workspace__read`) to figure out where it goes.
@@ -34,16 +34,16 @@ The dev servers are already running and reload on file changes; you don't restar
 Every assistant turn during vibe-edit lands in the **same** Mindspace history as the original build. This means:
 
 - **Do** keep calling `coding_workspace__*` tools for any change — the session stays bound; the edits land in order.
-- The current Mindspace is the active one; bringing another employee back in (e.g. `start_spec` to re-plan with the PM) continues it — it never forks.
+- The current Mindspace is the active one; re-planning with `start_spec` continues it — it never forks.
 
-If the user wants a genuinely *new* Mindspace, that's the moment for `switch_mindspace()` (clean slate), then `start_app_building`.
+If the user wants a genuinely *new* Mindspace, that's the moment for `focus_on_expertise(target=<its name>, create=true)` (its own Mindspace), then `start_app_building`.
 
 ## When you reopen the terminal on an existing project
 
 If the user's session restarts (closed terminal, etc.):
 
 1. Call `current_session` — if it still tracks the project, `start_app_building` continues it (the plugin keeps the id; you don't pass one).
-2. If not, run `list_mindspaces`, find the one they want, and `switch_mindspace(target=<name or id>)` to re-activate it — then the next transition continues it. (You can't target a Mindspace through a transition; `switch_mindspace` is the only way to point at a specific one. After a clean restart there's nothing active to leave, so the confirm is a no-op.)
+2. If not, run `list_mindspaces`, find the one they want, and `focus_on_expertise(target=<name or id>)` to re-activate it, then carry on. (`focus_on_expertise` is the only way to point at a specific Mindspace; after a clean restart there's nothing active to leave, so the confirm is a no-op.)
 
 ## When to call `complete_build` vs `abandon_build` vs nothing
 

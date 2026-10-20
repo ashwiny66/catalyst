@@ -1,10 +1,10 @@
-# The Engineer — your build loop
+# Write code — your build loop
 
-> **Read this when:** `start_app_building` returned `mode: "coding"` (the internal value — it means the Engineer is on it), or you're driving an active build.
+> **Read this when:** `start_app_building` returned `mode: "coding"`, or you're driving an active build.
 
 ## What the handoff gives you
 
-When `start_app_building` brings the Engineer in, the response carries:
+When `start_app_building` starts the build, the response carries:
 
 - `kickoff_message` — a single string with the workspace path, tech stack summary, the full PRD, the repo map, and the build rules. **This IS your build instruction.** Treat it as your first user-turn brief.
 - `app_root` — the project's working directory; every `coding_workspace__*` path is relative to it.
@@ -16,7 +16,7 @@ The PRD and repo map are inlined in `kickoff_message`. Don't re-fetch them with 
 
 ## The contract — what to do, in order
 
-1. **Acknowledge the handoff.** Tell the user the Engineer's on it once — e.g. "On it — building now." Don't repeat it.
+1. **Acknowledge the handoff.** Tell the user once — e.g. "On it — building now." Don't repeat it.
 2. **For data work, know which store you are in.** The **Database** (`coding_workspace__app_database`, read live: `mode='tables'` / `'describe'` / `'query'`) is the app's own transactional store — the tables this app creates, migrates and seeds live there, and `coding_workspace__app_database_write` changes it (one transaction; comment every table and column you create). The **Warehouse** below is the org's analytics store — written only by ETL (a scheduled job's dump, a derived reporting table), read by everything else: reuse its data for reports, **never transactional data, never create the app's tables in it**. When no Database is connected yet the build context says so, and the scaffold would point the app at the Warehouse. Before you scaffold an app that stores data, say so and ask: connect a Database first (Setup → Database) if the data is transactional, or proceed — their call, an explicit yes. On yes, build; the day they connect a Database a rebuild moves the tables (nothing re-points a running app).
    - `coding_workspace__db_skill` (`mode='read'`) — the org's business-understanding skill: what the business is, how the tables serve each outcome, hard facts + query learnings. **Read it before the tables** so you build knowing the business, not cold. (Present once business context has been captured; read-only here — the wizard's DB knowledge chat authors it.)
    - `coding_workspace__get_all_db_tables` lists every existing table with its purpose and relationships (supports a `query` regex + paging).
@@ -45,7 +45,7 @@ If the user says "it looks broken" *after* completion, you're already in vibe-ed
 
 ## Which hands touch the app
 
-Native tools (Read / Edit / Write / Bash / Grep / etc.) are open while the Engineer is on it (since 2026-10-14) — but they act on your companion's own machine. **The app lives on the workspace: always use `coding_workspace__*` for its files, its shell, its tests.** A file written natively lands on the laptop and never reaches the build. To pull a local file into the build, `upload_to_workspace` and run the curl it returns.
+Native tools (Read / Edit / Write / Bash / Grep / etc.) are open — but they act on your companion's own machine. **The app lives on the workspace: always use `coding_workspace__*` for its files, its shell, its tests.** A file written natively lands on the laptop and never reaches the build. To pull a local file into the build, `upload_to_workspace` and run the curl it returns.
 
 Plan mode (`EnterPlanMode`/`ExitPlanMode`) is denied while a Catalyst session is live — the PRD is the plan.
 
@@ -59,19 +59,19 @@ If the user asks "did that get saved?" the answer is always yes.
 
 | Symptom | What to do |
 |---|---|
-| `coding_workspace__*` returns "no active build session" / "no bound tools" | The session marker dropped (e.g. Catalyst restarted). `current_session` — if it still shows the Mindspace, `start_app_building` re-binds your current one. If not, `list_mindspaces` → `switch_mindspace(target=<name or id>)` to re-activate that Mindspace, then continue. |
+| `coding_workspace__*` returns "no active build session" / "no bound tools" | The session marker dropped (e.g. Catalyst restarted). `current_session` — if it still shows the Mindspace, `start_app_building` re-binds your current one. If not, `list_mindspaces` → `focus_on_expertise(target=<name or id>)` to re-activate that Mindspace, then continue. |
 | A `coding_workspace__bash` returns "fatal" after retries | Something broke between Catalyst and the workspace. Tell the user, then re-call the same tool — it will rebuild the connection automatically. If it fails twice, point them at the Cloud step in the app. |
 | A tool call hangs for >2 minutes | Move on. The skill stays alive; tell the user "that step's taking longer than usual — let me know if you want me to retry or skip it." |
 
 ## Cost note
 
-The Engineer's LLM cost is on the user's own model account, not Catalyst's. The PM (planning) and database steps run on Catalyst's account.
+The build's LLM cost is on the user's own model account, not Catalyst's. Planning and database steps run on Catalyst's account.
 
 ## Build shapes, production discipline, where it runs, and closing
 
 > *Moved verbatim from `SKILL.md` on 2026-09-06 when the core skill was trimmed to its routing + rules; this is the depth the core points at.*
 
-The Engineer is **super-specialized** in exactly these build shapes — whatever the work needs made lands as one of them, made and proven —
+You build in exactly these shapes — whatever the work needs made lands as one of them, made and proven —
 
 - a one-off **script** or a **simple job**;
 - a **scheduled job** that runs on a cadence;
@@ -99,7 +99,7 @@ Then, as the expert, **recommend the next move** — don't hand over a bare menu
 ```
 I'd <your recommendation> next — <one line why>.
 
-Or: tweak this app · switch to another (<other Mindspaces, full session_ids>) · start something new.
+Or: tweak this app · move to another (<other Mindspaces, full session_ids>) · start something new.
 ```
 
-They take your recommendation or ask for a tweak → just do it (a tweak the Engineer makes). "Switch to <other>" → `switch_mindspace` (confirm first). "Something new" → `switch_mindspace` to a clean slate, then investigate, spec, or build. Anything else (a feature request) → treat as a tweak and act. Never abandon here — switching covers the rest. A **script / job / check / model** has no URLs — just report what you built and recommend the next move, same as above.
+They take your recommendation or ask for a tweak → just do it. "Another one" → `focus_on_expertise(target=<name>)` (confirm first). "Something new" → `focus_on_expertise(target=<its name>, create=true)` for its own Mindspace, then investigate, spec, or build. Anything else (a feature request) → treat as a tweak and act. Never abandon here — focusing elsewhere covers the rest. A **script / job / check / model** has no URLs — just report what you built and recommend the next move, same as above.

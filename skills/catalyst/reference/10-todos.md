@@ -46,13 +46,13 @@ Every `answer` or `comment` by one side hands the ball to the other; a final ans
 | `track` | `ref` + `subtasks=[{key, title, external_id, url, status?, assignee?, due?}]` (+ `app`; default the org's tool) — register the tool's tasks on the todo so they show inside it; re-tracking an `external_id` refreshes it | requester or assignee |
 | `subtask_update` | `ref` + `sub` (key · external_id · id) + `status` (`open` · `in_progress` · `done` · `cancelled`) / `external_status` (the tool's own words) / `url` / `title` — after reading the tool | requester or assignee |
 
-The tool is bound on every surface (Analyst, PM, Engineer; ScratchPad and Mindspace). In the **ScratchPad** `mindspace=current` means *none* — rows land unclassified; move to a Mindspace to classify.
+The tool is bound everywhere, home and every Mindspace. At **home** `mindspace=current` means *none* — rows land unclassified; file one by naming its Mindspace.
 
 **Any row can carry subtasks** — the tasks it is tracked with in the org's project-management tool: a PRD's requirement rows, or a request that becomes several tasks there. The ToDo stays the conversation; its subtasks say where the work is and how far along it is (n/m done, each with its link — the ToDo drawer lists them). Never a second ToDo per task: `track` them on the row you have.
 
 ## How it reaches people — the injection
 
-You never poll the ToDo list. On every `/catalyst` landing (`open_scratchpad`) and every Mindspace entry, the response carries:
+You never poll the ToDo list. On every `/catalyst` landing (`ensure_auth(home=true)`) and every Mindspace entry, the response carries:
 
 - `digest` — counts: `assigned_open` (waiting for your companion's response), `waiting_on_others` (their asks the other side holds), `answers_new` (what came back). Turn it into **one line** in the greeting: *"Two things are waiting on you, and <Name> answered your question on <topic>."* Empty → say nothing.
 - `todos_block` — the items themselves, two groups: **Waiting for your companion's response** (their move — relay conversationally, then record with `answer` / `comment` / `update` / `close`) and **Back on what they asked** (answers and completions, shown **once** — tell them, carry it into the work, then `close` what is settled).

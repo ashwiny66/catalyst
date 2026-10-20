@@ -1,10 +1,10 @@
 # Bootstrap & required state
 
-> **Read this when:** `open_scratchpad` returned `status: error`, `health_check` came back with a failed precondition, or you need to recover from a partially-set-up account.
+> **Read this when:** the first call (`ensure_auth(home=true)`) returned `status: error`, `health_check` came back with a failed precondition, or you need to recover from a partially-set-up account.
 
 ## What `health_check` tells you
 
-`health_check` is a diagnostic, not a landing step — `/catalyst` lands through `open_scratchpad` alone (its success already proves the backend and database are up). Run `health_check` when that call errors, or when a tool later fails in a way that smells like setup.
+`health_check` is a diagnostic, not a landing step — `/catalyst` lands through `ensure_auth(home=true)` alone (its success already proves the backend and database are up). Run `health_check` when that call errors, or when a tool later fails in a way that smells like setup.
 
 It returns a small status block. Two fields decide whether you can proceed:
 
@@ -48,7 +48,7 @@ If a Catalyst tool comes back with a connection error, Catalyst is down on the u
 What to do:
 
 1. Tell the user: "Catalyst stopped responding — restart it with `./start.sh` and say 'continue' when it's back."
-2. When they say continue: a backend restart doesn't clear your local marker, so usually `start_app_building` (or `start_spec`) just continues your current Mindspace — the plugin still knows which one. If the marker was cleared (`current_session` shows nothing), `list_mindspaces` → `switch_mindspace(target=<name or id>)` to re-activate it, then the next transition continues it.
+2. When they say continue: a backend restart doesn't clear your local marker, so usually `start_app_building` (or `start_spec`) just continues your current Mindspace — the plugin still knows which one. If the marker was cleared (`current_session` shows nothing), `list_mindspaces` → `focus_on_expertise(target=<name or id>)` to re-activate it, then carry on.
 
 The user doesn't need to abandon, reset, or restart the terminal.
 

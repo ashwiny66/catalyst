@@ -500,7 +500,7 @@ def _maybe_update_local_sentinel(payload: Dict[str, Any]) -> None:
     # a completed Mindspace could never be opened from the plugin (COD, HL,
     # 2026-09-18). The user picked this Mindspace by name: bind the tab to it,
     # mode=menu, the previous Mindspace's stream id cleared.
-    if payload.get("__tool_name__") == "switch_mindspace" and payload.get("status") == "switched":
+    if payload.get("__tool_name__") in ("focus_on_expertise", "switch_mindspace") and payload.get("status") == "switched":
         if _patch_sentinel({"session_id": sid, "mode": mode or "menu",
                             "app_root": app_root, "gen_stream_id": None}):
             logger.info("sentinel switched (passive) %s → %s: mode=%s, completed Mindspace bound",

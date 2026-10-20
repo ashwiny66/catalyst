@@ -4,16 +4,16 @@
 
 | Symptom | What to do |
 |---|---|
-| `open_scratchpad` returns `status: error` | Read its `fix_required` to the user. Then `health_check` for the detail (backend down / database unreachable) and follow the row that matches. |
+| `ensure_auth(home=true)` returns `status: error` | Read its `fix_required` to the user. Then `health_check` for the detail (backend down / database unreachable) and follow the row that matches. |
 | `health_check` returns `backend_up: false` | Tell the user: "Catalyst isn't running on your machine. Start it with `./start.sh` in the catalyst-builder folder, then say 'continue'." |
-| A native `Write`/`Edit` "worked" but the app didn't change | Native tools act on the laptop; the app lives on the workspace. Redo it through `coding_workspace__write` / `edit` (or `upload_to_workspace` for a local file). Nothing is blocked by gear since 2026-10-14 — the right hand is yours to pick. |
-| `coding_workspace__*` returns "no active build session" / "no bound tools" | The session marker dropped (e.g. Catalyst restarted). `current_session` — if it still shows the Mindspace, `start_app_building` re-binds your current one. If not, `list_mindspaces` → `switch_mindspace(target=<name or id>)` to re-activate it, then `start_app_building` / `start_spec` continue it. |
+| A native `Write`/`Edit` "worked" but the app didn't change | Native tools act on the laptop; the app lives on the workspace. Redo it through `coding_workspace__write` / `edit` (or `upload_to_workspace` for a local file). Everything is open — the right hand is yours to pick. |
+| `coding_workspace__*` returns "no active build session" / "no bound tools" | The session marker dropped (e.g. Catalyst restarted). `current_session` — if it still shows the Mindspace, `start_app_building` re-binds your current one. If not, `list_mindspaces` → `focus_on_expertise(target=<name or id>)` to re-activate it, then `start_app_building` / `start_spec` continue it. |
 | `complete_build` errors finalizing (migrations / launch) | The agent's migrations or `start.sh` failed. Read the error, check `health_check` (usually the DB connection); fix the cause and re-run `complete_build` (it's idempotent). |
-| An external MCP (e.g. a Redshift/Slack/Notion MCP) is blocked with "external MCP — blocked while …" | An older plugin: since 2026-10-14 external MCPs are open in every gear. Ask the user to update the plugin (`/plugin install catalyst@catalyst-aibuilder`, then a new session). |
+| An external MCP (e.g. a Redshift/Slack/Notion MCP) is blocked with "external MCP — blocked while …" | An older plugin: external MCPs are open now. Ask the user to update the plugin (`/plugin install catalyst@catalyst-aibuilder`, then a new session). |
 | A `coding_workspace__bash` returns "fatal" / "unreachable" after retries | Connection to the project workspace dropped. Re-call the same tool — most of the time it rebuilds the connection automatically. If it fails twice, point the user at the Cloud step in the app. |
 | Live preview shows the project but the chat pane stops updating | The user's browser tab is stale — have them refresh. Your work is still being saved; refresh just reconnects the live stream. |
 | The session marker sticks around for a build that's already over (the agent crashed mid-build) | `current_session` to see what's marked → `abandon_build(session_id, reason="stale")`. Only frees THIS tab's marker; markers from crashed tabs also age out on their own after 10 idle days. |
-| User wants to run two builds at once | Supported — open another Claude Code tab and run `/catalyst` there. Each tab holds its own session marker and streams to its own Mindspace independently (two tabs may even work the same Mindspace; their turns share one chat history). Within ONE tab it's still one active session — `switch_mindspace` to move it. |
+| User wants to run two builds at once | Supported — open another Claude Code tab and run `/catalyst` there. Each tab holds its own session marker and streams to its own Mindspace independently (two tabs may even work the same Mindspace; their turns share one chat history). Within ONE tab it's still one Mindspace at a time — `focus_on_expertise` to move it. |
 
 ## Resetting bad state — order of escalation
 
@@ -30,6 +30,6 @@ Run `health_check` and `current_session` first.
 
 - If `current_session` shows an active build (`mode: coding`), the build is still in flight; the issue is probably a stalled tool call. Tell them what you were doing and offer to retry or switch direction.
 - If it shows `mode: vibe_code`, the initial build completed; the issue is in something you just edited. Read the most recent few turns to remember what you tried, then ask: "I just changed X — is that the part that's broken, or something earlier?"
-- If `current_session` returns `{"active": false}`, no build is in progress. Run `list_mindspaces`, see which Mindspace the user means, then `switch_mindspace(target=<name or id>)` to re-activate it — once active, `start_app_building` / `start_spec` continue it.
+- If `current_session` returns `{"active": false}`, no build is in progress. Run `list_mindspaces`, see which Mindspace the user means, then `focus_on_expertise(target=<name or id>)` to re-activate it — once active, `start_app_building` / `start_spec` continue it.
 
 Don't apologize generically. Confirm the state, name what you last did, and offer a concrete next step.

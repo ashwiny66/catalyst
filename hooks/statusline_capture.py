@@ -137,7 +137,7 @@ def _pre_label(st: dict, bare: str, args: dict):
     if bare == "external_tools_execute":
         app = str(args.get("toolkit") or args.get("app") or "").strip()
         return f"reaching {app}" if app else "reaching a connected tool"
-    if bare in ("open_scratchpad", "start_analysis", "start_app_building", "start_spec", "switch_mindspace"):
+    if bare in ("open_scratchpad", "start_analysis", "start_app_building", "start_spec", "switch_mindspace", "focus_on_expertise"):
         return "opening the Mindspace"
     return None
 

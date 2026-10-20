@@ -109,7 +109,7 @@ function preLabel(st, name, args) {
     case 'save_prd': return 'saving the PRD';
     case 'todos': return 'on the ToDos';
     case 'external_tools_execute': { const app = String(args.toolkit || args.app || '').trim(); return app ? `reaching ${app}` : 'reaching a connected tool'; }
-    case 'open_scratchpad': case 'start_analysis': case 'start_app_building': case 'start_spec': case 'switch_mindspace': return 'opening the Mindspace';
+    case 'open_scratchpad': case 'start_analysis': case 'start_app_building': case 'start_spec': case 'switch_mindspace': case 'focus_on_expertise': return 'opening the Mindspace';
     default: return null;
   }
 }

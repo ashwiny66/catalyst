@@ -5,4 +5,4 @@ argument-hint: "What to build (e.g. 'a logistics tracker for last-mile drivers')
 
 Use the Catalyst skill to build the app described in `$ARGUMENTS`.
 
-Start with `mcp__catalyst-mcp__open_scratchpad` (the one landing call — it checks sign-in and opens the ScratchPad), then follow the Catalyst skill playbook: move to the right Mindspace only if the user names one or wants something new, and bring in the right employee — the Analyst to investigate, the PM to shape a plan when the ask is fuzzy, the Engineer to build and ship.
+Start with `mcp__catalyst-mcp__ensure_auth` with `home: true` (it checks sign-in and opens the home Mindspace), then follow the Catalyst skill: name a Mindspace for the app before you build it, build it there, and test it on the live URL before you call it done.

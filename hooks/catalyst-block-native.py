@@ -52,8 +52,8 @@ Responsibilities, in order:
    into EVERY catalyst-mcp tool call that targets a Mindspace, via
    ``hookSpecificOutput.updatedInput``. The server routes purely on that arg.
    Empty row session_id → the field is omitted → the server mints a fresh
-   Mindspace (only after a ``switch_mindspace`` clean-slate). The agent never
-   chooses the Mindspace; ``switch_mindspace`` (its own ``target_session_id``,
+   Mindspace (only after a ``focus_on_expertise`` clean-slate). The agent never
+   chooses the Mindspace; ``focus_on_expertise`` (its own ``target_session_id``,
    user-confirmed) is the only way to change which one is active — it updates
    the calling tab's row IN PLACE (no new row).
 
@@ -222,14 +222,14 @@ _PLAN_MODE_TOOLS = {"EnterPlanMode", "ExitPlanMode"}
 # session_id — that's the legitimate "resume the Mindspace I just found in
 # list_mindspaces" path; without it, an end→resume would silently FORK a new
 # Mindspace (the v0.1.23 regression this guards against). Workspace tools never
-# resurrect from an agent value. switch_mindspace's target_session_id (where to GO)
+# resurrect from an agent value. focus_on_expertise's target_session_id (where to GO)
 # is a separate arg we never overwrite.
 #
 # Carve-outs from the general "inject current session" rule:
 #   _NO_SESSION_BARE — tools with no Mindspace target (account / listing).
 #       Injecting an unused session_id is harmless but we skip them to keep
 #       payloads clean.
-#   switch_mindspace — NOT carved out: it gets session_id (= current) injected
+#   focus_on_expertise — NOT carved out: it gets session_id (= current) injected
 #       like everything else, which the server reads as the Mindspace to leave;
 #       its target_session_id (the agent's pick of where to GO) is a different
 #       arg that _inject_current_session never touches, so it's preserved.
@@ -238,12 +238,12 @@ _PLAN_MODE_TOOLS = {"EnterPlanMode", "ExitPlanMode"}
 #       server abandons the caller's build (handle_abandon_build reads args).
 _NO_SESSION_BARE = {
     "health_check", "ensure_auth", "logout", "list_mindspaces", "list_projects",
-    # open_scratchpad — the `/catalyst` landing call. Takes NO args: the server
-    # resolves the caller's ScratchPad itself, and its response is a FULL entry
-    # (mode=deep_analysis + sid + app_root + gen_stream_id) that PostToolUse
-    # binds this tab to — even if another Mindspace was active (re-running
-    # `/catalyst` = go home to the ScratchPad; non-destructive, that Mindspace
-    # is one switch_mindspace away).
+    # ensure_auth(home=true) / open_scratchpad — the `/catalyst` landing call.
+    # The server resolves the caller's home Mindspace itself, and its response is
+    # a FULL entry (mode=deep_analysis + sid + app_root + gen_stream_id) that
+    # PostToolUse binds this tab to — even if another Mindspace was active
+    # (re-running `/catalyst` = go home; non-destructive, that Mindspace is one
+    # focus_on_expertise away). Plain ensure_auth returns no entry, binds nothing.
     "open_scratchpad",
 }
 
@@ -501,12 +501,12 @@ def main() -> int:
     # tab's registry row is the sole source of routing truth: stamp its
     # session_id (overwriting any value the agent supplied) into every
     # catalyst-mcp tool that targets a Mindspace — coding_workspace__*,
-    # transitions, switch_mindspace, current_session, record_turn, recall_*,
+    # transitions, focus_on_expertise, current_session, record_turn, recall_*,
     # complete_build, … Empty row session_id → drop it → server mints a
-    # fresh Mindspace (only after a switch_mindspace clean-slate). The agent
-    # never picks the Mindspace; switch_mindspace is the only change, gated.
+    # fresh Mindspace (only after a focus_on_expertise clean-slate). The agent
+    # never picks the Mindspace; focus_on_expertise is the only change, gated.
     # Carve-outs: no-session tools (account/listing) are left untouched and
-    # just allowed; switch_mindspace's target_session_id is the agent's pick
+    # just allowed; focus_on_expertise's target_session_id is the agent's pick
     # and is preserved — we add session_id (= current) alongside it.
     if is_cat and bare_name not in _NO_SESSION_BARE:
         # Transitions may resume an agent-named Mindspace when the row is
