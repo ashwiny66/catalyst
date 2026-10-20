@@ -115,7 +115,7 @@ def _pre_label(st: dict, bare: str, args: dict):
         return f"reaching {who}'s Wingman" if who else "reaching a colleague's Wingman"
     if bare == "ask_wingman":
         who = str(args.get("person") or "").strip()
-        return f"reaching {who}'s Wingman" if who else "reaching a colleague's Wingman"
+        return f"reaching {who}'s Wingman" if who else "searching the Company Agent Directory"
     if bare == "mindspace_skill":
         return "Learning expertise" if mode in WRITE_SKILL else "recalling this Mindspace's expertise"
     if bare == "mindspace_memory":
@@ -211,6 +211,24 @@ def _on_post(st: dict, bare: str, args: dict, resp) -> None:
             st["user"] = m.group(1)
 
 
+def _watch(session_id: str) -> None:
+    """ask_wingman takes 20-30 s: a detached watcher copies each step it reports into the in-flight
+    label while it runs (wingman_progress_watch.py), so the status line shows the reaching out."""
+    try:
+        with open(_path(session_id), encoding="utf-8") as f:
+            at = int(((json.load(f) or {}).get("inflight") or {}).get("at") or 0)
+        if not at:
+            return
+        import subprocess
+        here = os.path.dirname(os.path.abspath(__file__))
+        kw = {"creationflags": 0x00000008} if os.name == "nt" else {"start_new_session": True}   # DETACHED_PROCESS
+        subprocess.Popen([sys.executable, os.path.join(here, "wingman_progress_watch.py"), session_id, str(at)],
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                         close_fds=True, **kw)
+    except Exception:
+        pass
+
+
 def main() -> int:
     try:
         raw = sys.stdin.read()
@@ -224,6 +242,8 @@ def main() -> int:
         hook = str(ev.get("hook_event_name") or "")
         if hook == "PreToolUse":
             _update(sid, lambda st: _on_pre(st, bare, args))
+            if bare == "ask_wingman":
+                _watch(sid)
         elif hook == "PostToolUse":
             _update(sid, lambda st: _on_post(st, bare, args, ev.get("tool_response")))
     except Exception:

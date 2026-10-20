@@ -98,7 +98,7 @@ function preLabel(st, name, args) {
   switch (name) {
     case 'enterprise_trusted_skills': return "reaching the company's Wingmen";
     case 'read_org_skill': { const who = ownerFor(st, String(args.mindspace || '')); return who ? `reaching ${who}'s Wingman` : "reaching a colleague's Wingman"; }
-    case 'ask_wingman': { const who = String(args.person || '').trim(); return who ? `reaching ${who}'s Wingman` : "reaching a colleague's Wingman"; }
+    case 'ask_wingman': { const who = String(args.person || '').trim(); return who ? `reaching ${who}'s Wingman` : 'searching the Company Agent Directory'; }
     case 'mindspace_skill': return WRITE_SKILL.has(mode) ? 'Learning expertise' : "recalling this Mindspace's expertise";
     case 'mindspace_memory': return mode === 'save' ? 'Recording memories' : mode === 'forget' ? 'pruning a memory' : 'recalling memories';
     case 'user_persona': return mode.startsWith('write') ? 'Learning how you work' : 'reading how you work';
@@ -196,6 +196,18 @@ function readAll(timeoutMs = 3000) {
   });
 }
 
+/** ask_wingman takes 20-30 s: a detached watcher copies each step it reports into the in-flight
+ *  label while it runs (wingman_progress_watch.js), so the status line shows the reaching out. */
+function watch(sid) {
+  try {
+    const at = Number(((JSON.parse(fs.readFileSync(statePath(sid), 'utf8')) || {}).inflight || {}).at || 0);
+    if (!at) return;
+    const { spawn } = require('node:child_process');
+    spawn(process.execPath, [path.join(__dirname, 'wingman_progress_watch.js'), sid, String(at)],
+      { detached: true, stdio: 'ignore', windowsHide: true }).unref();
+  } catch { /* the label just stays */ }
+}
+
 async function main() {
   try {
     const raw = await readAll();
@@ -206,7 +218,10 @@ async function main() {
     const name = bare(tool);
     const args = ev.tool_input && typeof ev.tool_input === 'object' ? ev.tool_input : {};
     const hook = String(ev.hook_event_name || '');
-    if (hook === 'PreToolUse') update(sid, (st) => onPre(st, name, args));
+    if (hook === 'PreToolUse') {
+      update(sid, (st) => onPre(st, name, args));
+      if (name === 'ask_wingman') watch(sid);
+    }
     else if (hook === 'PostToolUse') update(sid, (st) => onPost(st, name, args, ev.tool_response));
   } catch {
     // never disturb the tool call
