@@ -6,7 +6,7 @@
 
 Every tool here is open to you — the whole `coding_workspace__*` surface, every native tool, and your companion's own external MCP servers. Pick the one that touches the right place: Catalyst tools for the company's data and the workspace (the app, the Mindspace's files); native tools for your companion's own machine — a file written natively lands on the laptop, not in the app. Plan mode (`EnterPlanMode`/`ExitPlanMode`) stays blocked while a session is live — product work happens in conversation.
 
-Where a call lands: `run_select_query` and `run_python` always at home; making tools only in the Mindspace the work belongs to, never at home (`00-flow-and-tools.md`).
+Where a call lands: the Mindspace in focus; making tools only in the Mindspace the work belongs to, never at home (`00-flow-and-tools.md`).
 
 ## Read & understand
 

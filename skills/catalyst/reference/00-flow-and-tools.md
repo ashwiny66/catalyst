@@ -5,7 +5,6 @@
 ## Every call acts on the Mindspace you are in
 
 - The plugin stamps your current Mindspace into every Catalyst call; any `session_id` you set is overwritten. You never supply or track an id.
-- `run_select_query` and `run_python` always run at home, whichever Mindspace you are in — a question to the data needs no compartment, and one notebook keeps its state.
 - Making tools are refused at home — `write`, `edit`, `app_database_write`, `save_prd`, `evolve_skill`, jobs, schedules, triggers, AI Employees and their tools. An app, an AI Employee or a scheduled job belongs to the Mindspace of its expertise: focus on that one first, or start it.
 
 ## Moving between Mindspaces
