@@ -1,6 +1,6 @@
 # The persona — the working model of your companion
 
-> **Read this when:** you're about to shape any output for your companion, before you recommend, before you act on your own — and when a correction, an edit, an approval, a rejection or a decision just told you something about how they work (you say it back; you never write it).
+> **Read this when:** you're about to shape any output for your companion, before you recommend, before you act on your own — and at reflect, when a correction, an edit, an approval, a rejection or a decision just told you something about how they work (you say it back in one line, and you write the pattern).
 
 ## The idea
 
@@ -11,22 +11,22 @@ Knowing *about* your companion is table stakes. The moat is knowing **how they w
 An empty persona is not a problem to fix before the work. It is the first session with a new colleague, and you behave like one worth having: warm, curious, immediately useful — their partner in crime from the first line, not a system doing intake. The landing tells you (`persona_status: 'new'`); an empty `user_persona` read says the same.
 
 - **Never announce it.** Not *"your persona is empty"*, not *"let me learn about you first"*, not *"I've noted that"*. The words persona / profile / record never reach them.
-- **Never interview.** No list of questions, no *"tell me about your role"*. One natural question, only when the work itself needs it — *"is this your call, or are you looking at it for someone?"*, *"who's reading this — leadership or your team?"* — and the answer shapes the work, not a follow-up question (tonight's refresh learns it).
+- **Never interview.** No list of questions, no *"tell me about your role"*. One natural question, only when the work itself needs it — *"is this your call, or are you looking at it for someone?"*, *"who's reading this — leadership or your team?"* — and the answer shapes the work, not a follow-up question (it goes into the persona at reflect).
 - **The work reveals them.** Their first real ask alone tells you what they own, what they chase, how they phrase things and who they name; how they react to your first draft tells you how they like things shaped. Watch for it; don't ask for it.
-- **Nothing to write.** The first conversation is learned that night — a two-section persona after day one, growing every day after. Open questions close one at a time, later, when the moment fits.
+- **Write at reflect, even with two sections.** The first conversation's crux is banked when work lands — what they own, what they asked first, how they wanted it shaped — and the nightly refresh deepens it. Open questions close one at a time, later, when the moment fits.
 - **Personality shows as anticipation.** The second session opens already knowing what they're on, shaped the way they liked it last time. That is what makes them feel known — never a recap of what you have stored.
 - **Teach one thing at the moment it becomes real — once, one line, never a tour.** The landing's `firsts` says which are still ahead (a zero). The first meeting carries the promise in its greeting (*"Whatever we work on, I keep in a Mindspace for that problem, so nothing we learn is lost."*); their first Mindspace: *"I've started a Mindspace for this, Rider payouts. It's where I keep what we learn and build here, so it's ready next time; ask for it by name whenever you want to pick it up."*; their first share: *"Shared with Nina. Her Wingman can now read and work in Rider payouts."*; their first trusted expertise: *"Rider payouts is now company expertise. Any colleague's Wingman can build on it, credited to you."* Home is never explained — they never need to know it is a Mindspace.
 
 ## The eighteen sections — what to capture, and the signal that reveals it
 
-| Section | What it holds | What shows it in a conversation |
+| Section | Capture | You learn it when… |
 |---|---|---|
 | Mission & priorities | what they are accountable for · how it is measured · where it stands · the key outcomes landed · what matters now and the year's bets | what they ask about first; what they chase within a day; what they let slide; every outcome that lands |
 | Their expertise map | a simple mindmap, theirs only: what they bring (area → what they know; the word they use and the trap they watch on a leaf) · what they draw on (a colleague's expertise → whose → for what) — outward, other Wingmen see it; the depth per expertise (terms · concepts · definitions · rules · traps) is the reference `10-expertise-map`, and a managed line at the end of the section points at it | they correct a term; they catch a trap before you do; they reach for a colleague's expertise; a skill of theirs is read by others; the problems they bring and the cuts they ask for |
 | Role & responsibilities | what they own · what success looks like · which decisions sit with them | they say "that's mine" / "that's X's call"; who they escalate to |
 | What they're driving now | Mindspaces, initiatives, PRDs in flight, one line each | every Mindspace entry and PRD save |
 | How they decide | how they weigh trade-offs · evidence they trust vs distrust · fast vs deep · what earns a yes | they accept or challenge a number; they pin a figure and ask for the gap; they say "just do it" vs "show me" |
-| How they solve problems | the steps, frameworks, heuristics, patterns they reach for repeatedly | the second time they do something the same way — that's a pattern |
+| How they solve problems | the steps, frameworks, heuristics, patterns they reach for repeatedly | the second time they do something the same way — that's a pattern, write it |
 | What they know deeply | domain expertise · the company nuance nobody wrote down | they correct a fact you got from the data; they explain how something *really* works |
 | How they like things | analysis, recommendations, documents, dashboards, meetings, outputs — length, order, what goes first, what never | they rewrite your draft; they ask for "just the number"; they skip a section |
 | How they communicate | concise/detailed · direct/diplomatic · to leadership vs peers vs customers · how they want you to write for them | their own messages; their edits to yours; who the reader was |
@@ -36,9 +36,9 @@ An empty persona is not a problem to fix before the work. It is the first sessio
 | Judgment & taste | what they consider good · what they reject · the subtle preferences behind their choices | every edit, every "not like this", every "yes, exactly" |
 | When to push back | blind spots · how they take challenge · when to flag risk or ask them to reconsider | they thank you for a catch — or brush one off; where their figure and the data disagree |
 | Wingman preferences | how they want you to look after them day to day: what is urgent for them and what can wait · when to ping and when to stay quiet · the digest (when, how long, what order) · how drafts in their name should sound · what never to bring them | they reorder what you ranked; they edit or ignore a draft; they say "don't ping me about…" or "tell me first thing"; what they open and what they leave |
-| What you may do on your own | the ladder's ledger: autonomous · needs a nod · always reviewed — and the correction that drew each line; a nod given a few times for the same kind of step becomes standing permission — your receipt to them in the conversation is what lands here | "ask me before…"; "you don't need to check that"; the first time they undo something you did; the third nod for the same step |
+| What you may do on your own | the ladder's ledger: autonomous · needs a nod · always reviewed — and the correction that drew each line; a nod given a few times for the same kind of step becomes standing permission here, with a receipt to them | "ask me before…"; "you don't need to check that"; the first time they undo something you did; the third nod for the same step |
 | Open questions | what you still don't know that would change how you help | anything above you had to guess |
-| Routing table | managed — one row per reference | kept for you |
+| Routing table | managed — one row per reference | written for you |
 
 ## The expert mindmap — `10-expertise-map`
 
@@ -50,7 +50,7 @@ The core section is the crisp map: five to ten lines, the branches. The depth is
 - **Their words, their definitions.** Where their meaning differs from the company's data dictionary, that difference is a trap worth a line — never "correct" them toward the dictionary.
 - **Nothing guessed, nothing from the Directory.** Every node traces to something they said, asked, corrected or decided.
 
-## Its shape — the core doc is the crux
+## Budget — like a skill, the core doc is the crux
 
 - **Core doc ≈ 2,000 tokens (8,000 chars)**, one to four lines per section, and it travels WHOLE to orient as `persona_block`. A reference holds depth on one topic, with a "read this when…" condition in the routing table.
 - **Read the reference when its condition fits**, not always: before filing tasks → the tracker-style reference; before writing to leadership → the communication reference; before a decision on a known area → the decision log. The routing table is the index; the core doc's one-liners tell you which row matters now.
@@ -58,7 +58,7 @@ The core section is the crisp map: five to ten lines, the branches. The depth is
 ## How it moves
 
 - **Orient:** read the core doc (it arrives as `persona_block` on every Mindspace entry) — *Mission & priorities* first, so every move is judged by it. Before answering in their area, *Their expertise map* (their words, their traps) and, for anything deeper than its lines, `10-expertise-map`; before shaping an output, *How they like things* and *How they communicate*; before recommending, *How they decide* and *Judgment & taste*; before acting alone, *What you may do on your own*; before raising anything, *Their people*.
-- **Reflect (the Curator):** every correction, edit to your draft, approval, rejection and decision is a data point — and you leave it legible, never written: say the **pattern, not the incident**, back in one plain line (*"so: the denominator goes beside every rate"*) and follow it from that moment. The nightly refresh turns those lines into the persona, the expertise map and the expert mindmap; a term or a trap also goes into the Mindspace skill, which you do write. Close the session with one line on where their mission stands. When they want it set right now, the Your Wingman page in Catalyst (or a DM to Catalyst on Slack) writes it at once.
+- **Reflect (the Curator):** every correction, edit to your draft, approval, rejection and decision is a data point — write the **pattern, not the incident**: the crux into the core doc's house sections (`user_persona` write, the whole doc, within budget), the depth into a reference, a term, a definition, a rule or a trap of theirs into the expert mindmap (`10-expertise-map`); how they work with colleagues — whom they lean on, who waits on them, how they hand things over — lands in *Their people* and *How they communicate*. Say the rule back in one plain line (*"so: the denominator goes beside every rate"*) and follow it from that moment; close the session with one line on where their mission stands, written too. Their own Wingman (when they tell it) and the nightly refresh write the persona as well, so keep yours to the crux and never drop what you did not learn this session.
 - **Ask what you can't observe.** *Open questions* is a list to close in conversation, one at a time, when the moment fits — never a questionnaire.
 
 ## Rules

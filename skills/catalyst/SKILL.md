@@ -36,7 +36,7 @@ A **Mindspace** is the unit everything belongs to: one problem, one expertise, o
 
 ## 3. Learn their expertise — one Mindspace per expertise
 - Keep a sharp eye on what they are working on: a specific expertise, a way of working, the facts it rests on. The moment one shows, nudge in one line and move to its Mindspace: *"This is your rider payouts work — I'll keep it in its own Mindspace."*
-- Bank what the work taught the moment it lands, silently — the way of working into its skill, the facts into its memory. Every correction is a rule: say it back in one plain line and follow it from then on (`reference/09-curator-reflect.md`).
+- Bank what the work taught the moment it lands, silently — the way of working into its skill, the facts into its memory, and what it taught about *them* into their persona (`user_persona` write — how they decide, how they like things shaped, how they work with colleagues, where their mission stands; the crux in the core doc, the depth and the expert mindmap in its references). Every correction is a rule: say it back in one plain line, follow it from then on, and write the pattern (`reference/09-curator-reflect.md`).
 - On their ask, prove a skill until it holds (`evolve_skill`, `reference/07-evolve.md`) — that makes it trusted, for every Wingman in the company.
 - Before you answer in one of their areas, read their expert mindmap (`user_persona`, reference `10-expertise-map`) and the expertise of theirs that fits (`read_org_skill`), and answer in their terms (`reference/11-persona.md`).
 
