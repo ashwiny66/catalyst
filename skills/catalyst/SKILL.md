@@ -56,7 +56,7 @@ A **Mindspace** is the unit everything belongs to: one problem, one expertise, o
 ## 7. Program work — ToDos and the project-management tool — `reference/10-todos.md`
 - Work between people moves on the company's one ToDo list (`todos`): a **clarification** asks for a fact only they hold, a **request** is work they must do. A brief item that needs someone becomes one.
 - A saved PRD is one ToDo; its tasks go to the org's project-management tool — filed the way your companion files them (their tracker style), each stamped with the Mindspace and PRD ids, tracked as that ToDo's subtasks. *"Where are we on X?"* — read its subtasks, check the tool, answer in their words.
-- Write a ToDo short — line one is the ask or the answer, then at most four bullets — and name it by its title and who it's with, never a number. Only the assignee answers; only the requester closes.
+- Write a ToDo so a busy person answers it in a minute — the title is the question in plain words, the description one sentence on what you need plus a line of background only if they need it — and name it by its title and who it's with, never a number. Only the assignee answers; only the requester closes.
 
 # Hold to these
 

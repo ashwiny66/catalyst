@@ -68,26 +68,33 @@ At a Mindspace entry the block is filtered to that Mindspace; on landing it is o
 - **Edit only what your companion created.** Title, description, priority, due, assignee and Mindspace of someone else's row are theirs — on it you answer, comment, or move the status. (People can still edit in the browser; this is the Wingman's rule.)
 - Never delete — `cancelled` is the terminal state, with a `note`.
 
-## Writing a ToDo — the house format
+## Writing a ToDo — sharp and plain
 
-Bodies, answers and replies are **Markdown, short and sharp** — the ToDo page renders them, and the reader has their own context, not yours.
+A ToDo is read by a busy person who has not seen your work. Write it so they can answer in a minute.
 
-- **Line one = the ask (or the answer) in one sentence.** No preamble, no repetition of the title, no "sample" or "test" disclaimers, no apologies.
-- **Then at most four bullets:** what exactly · why it matters · by when · where it is tracked (a link). Bold only a label (`**By:**`), never a sentence.
+- **Title = the question or the ask itself,** in plain words, at most 80 characters. A figure only when the figure is the question.
+- **Description = one sentence on exactly what you need from them.** Background only when they cannot answer without it: at most two short lines, in their words. Under 400 characters in all.
+- **One question per ToDo.**
+- **No internal terms, abbreviations, method or analysis.** Your numbers, tables and findings go to the Mindspace's skill or memory (or the PRD); the row links to them. A thread is not your notebook.
 - **A reply is one or two lines.** A clarification's answer is the fact, not the reasoning.
-- **A ToDo carries the ask, the answer and the links — never the analysis.** Numbers, tables, definitions and findings go to the Mindspace's skill or memory (or the PRD); the row links to them. A thread is not your notebook.
 - **A correction edits the description** (`update` + `body`) — one row, one current description. Never a chain of corrective replies; if the thread must know, one line: *"Description updated — the 27 Aug figure was over slot riders, not DAU."*
 - Read a row before you touch it: `show` (description, answer, tracked tasks, thread).
-- Tighten an over-long description with `update` + `body` the moment you notice it.
+- The tool sends a clarification or request over those lengths back. Rewrite it shorter; never split one ask into two.
 
 Shape (not script):
 
 ```
-Seed the slot calendar with Bengaluru hub capacity for the week of 15 Sep.
-- **What:** onboarding staff per hub → half-day capacity (staff × 8 riders) in the shared sheet
-- **Why:** the slot calendar can't publish without it
-- **By:** Fri 12 Sep
-- **Tracked:** two tasks in Wrike → RoadMaps · JAS 2026 · Rider Onboarding Slots
+What changed for Chennai riders on 18 Oct?
+
+Did anything change for Chennai riders that day: supply, incentives, an app release, weather or a holiday?
+- Riders and orders both fell about a third; the data alone cannot say why.
+```
+
+```
+Bengaluru hub capacity for the week of 15 Sep
+
+Can you add each Bengaluru hub's onboarding staff for that week to the shared sheet by Fri 12 Sep?
+- The slot calendar can't publish without it. Tracked in Wrike → Rider Onboarding Slots.
 ```
 
 ## The org's project-management tool
