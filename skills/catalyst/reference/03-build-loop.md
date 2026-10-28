@@ -6,13 +6,13 @@
 
 When `start_app_building` starts the build, the response carries:
 
-- `kickoff_message` — a single string with the workspace path, tech stack summary, the full PRD, the repo map, and the build rules. **This IS your build instruction.** Treat it as your first user-turn brief.
+- `kickoff_message` — a single string with the workspace path, tech stack summary, the build request as the person gave it, the repo map, and the build rules. **This IS your build instruction.** Treat it as your first user-turn brief. A PRD is product work's artefact and has nothing to do with a build unless the person points at it.
 - `app_root` — the project's working directory; every `coding_workspace__*` path is relative to it.
 - `frontend_url` / `backend_url` — share with the user once you've made any visible change. They open this URL to see the running app.
 - `tools_bound` — the list of `coding_workspace__*` tools that are now operational.
 - `entry_kind` — `fresh_handoff` (just out of spec), `interrupted_build` (the prior build was mid-flight), or `vibe_edit` (the app is shipping; user wants a tweak). Frame your first turn back to the user accordingly.
 
-The PRD and repo map are inlined in `kickoff_message`. Don't re-fetch them with `coding_workspace__get_prd` or `coding_workspace__get_repo_map` unless your context has been compacted — calling them when you already have the data is wasteful.
+The repo map is inlined in `kickoff_message`. Don't re-fetch it with `coding_workspace__get_repo_map` unless your context has been compacted — calling it when you already have the data is wasteful. `coding_workspace__get_prd` is for product work's saved PRD, read when the person asks you to build what it specified.
 
 ## The contract — what to do, in order
 
@@ -47,7 +47,7 @@ If the user says "it looks broken" *after* completion, you're already in vibe-ed
 
 Native tools (Read / Edit / Write / Bash / Grep / etc.) are open — but they act on your companion's own machine. **The app lives on the workspace: always use `coding_workspace__*` for its files, its shell, its tests.** A file written natively lands on the laptop and never reaches the build. To pull a local file into the build, `upload_to_workspace` and run the curl it returns.
 
-Plan mode (`EnterPlanMode`/`ExitPlanMode`) is denied while a Catalyst session is live — the PRD is the plan.
+Plan mode (`EnterPlanMode`/`ExitPlanMode`) is denied while a Catalyst session is live — the kickoff and the ask are the plan.
 
 ## Persistence is automatic
 

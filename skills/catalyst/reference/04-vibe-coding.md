@@ -8,7 +8,7 @@ After `complete_build` runs, the project's status flips to "completed" but the s
 
 The only practical difference between a fresh build and vibe-editing:
 
-- In a fresh build, you start from a kickoff message that includes the full PRD + repo map.
+- In a fresh build, you start from a kickoff message that includes the build request as given + the repo map.
 - In vibe-edit, you don't get a fresh kickoff. The user describes the change they want and you use the tools (`coding_workspace__get_repo_map`, `coding_workspace__get_prd`, `coding_workspace__read`) to figure out where it goes.
 
 Both feel identical to the user. The wizard's history is one continuous thread.

@@ -16,7 +16,7 @@ Where a call lands: the Mindspace in focus; making tools only in the Mindspace t
 | `grep` | Search file contents. |
 | `find` | List files matching a pattern. |
 | `get_repo_map` | File structure + symbol index, kept fresh by a daemon. |
-| `get_prd` | Read the PRD — the contract. |
+| `get_prd` | The PRD product work saved in this Mindspace, when one was shaped — read when they ask you to build what it specified; a build otherwise has nothing to do with it. |
 | `db_skill` | The org's **business-understanding** skill for its database — what the business is, its components, how the tables serve each outcome, hard facts + query learnings. **Read this FIRST** (`mode='read'`) for any data work, so you explore tables knowing the business, not cold. Read-only here; the wizard's DB knowledge chat authors it. (Present only once business context has been captured.) |
 | `get_all_db_tables` | The lay of the land — every table, its description, its foreign keys. After the skill, start here for data work. Supports a `query` regex + paging. |
 | `get_table_detail` | The exact columns + types of specific tables — **column names can't be inferred**; read this before any query/code that touches columns. |
