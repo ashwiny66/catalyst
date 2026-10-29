@@ -8,12 +8,7 @@ Product work turns the problem into build-ready PRDs: decide *what* to do about 
 
 ## When a PRD is worth writing
 
-A PRD is its own deliverable, not a step every build passes through. Write one when:
-
-- the work will be built by the company's own engineering team (a PRD with pushable tasks is how they receive it), or
-- the problem needs a real spec — success defined, stories mapped — before anyone builds, whichever builder that turns out to be.
-
-Work you build from a clear ask needs no PRD. If you're unsure, ask one framing question: "should I build this now, or write it up — for your team or for me to build?"
+A PRD is its own deliverable, written when the person asks for one — a plan, a spec, a write-up their engineering team receives with pushable tasks. It is never a step on the way to a build: asked to build, you build; asked for a PRD, you write one. The one thing you may ask when the ask itself is unclear is a framing question: "build this now, or write it up for your team?"
 
 ## How to run it well
 

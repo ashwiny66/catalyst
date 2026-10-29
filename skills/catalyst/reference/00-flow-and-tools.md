@@ -20,7 +20,7 @@
 
 | Tool | Purpose |
 |---|---|
-| `start_spec(prompt?)` | Shape a PRD with them, one question at a time, grounded in the Mindspace's real data and systems; `save_prd` on their yes. Detail: `02-spec-bridge.md`. |
+| `start_spec(prompt?)` | When they ask for a PRD: shape it with them, one question at a time, grounded in the Mindspace's real data and systems; `save_prd` on their yes. Never on the way to a build. Detail: `02-spec-bridge.md`. |
 | `start_app_building(prompt?, app_name?)` | Build on this Mindspace — a script, a job, an AI Employee, a model or a web app (scaffolds on the first web build). Pass the ask as `prompt`. The app's files go through `coding_workspace__*`, never native `Write`/`Edit` — those act on the laptop. Detail: `03-build-loop.md`. |
 | `complete_build(summary)` | Finalize a build after the completion JSON — runs migrations, boots the dev servers, returns the URLs. Idempotent; a Stop hook fires it as a safety net. |
 
