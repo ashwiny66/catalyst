@@ -4,7 +4,7 @@
 
     recovered   skills, references, memories and DB Wiki reads brought back this session
     wingmen     the colleagues whose Wingmen were reached (name → last time)
-    expertise   skill writes — the Curator "Learning expertise"
+    expertise   the expertises written or improved, each once (`learned` holds their keys)
     memories    memory saves — the Curator "Recording memories"
     inflight    the call running right now (PreToolUse sets it, PostToolUse clears it)
 
@@ -153,6 +153,21 @@ def _learn(st: dict, counter: str, label: str) -> None:
     st["last_learn"] = {"label": label, "at": _now_ms()}
 
 
+def _learn_expertise(st: dict, key: str, label: str) -> None:
+    """Expertise learned counts each expertise ONCE however many writes it took — a core
+    write plus three reference writes is one (the server: metrics.expertise_key)."""
+    learned = st.setdefault("learned", [])
+    if key not in learned:
+        learned.append(key)
+    st["expertise"] = len(learned)
+    st["last_learn"] = {"label": label, "at": _now_ms()}
+
+
+def _expertise_key(args: dict) -> str:
+    """The Mindspace whose expertise was written (the session id the PreToolUse hook stamps)."""
+    return str(args.get("session_id") or args.get("mindspace") or "mindspace")
+
+
 def _on_post(st: dict, bare: str, args: dict, resp) -> None:
     st["inflight"] = None
     text = _text(resp)
@@ -185,7 +200,7 @@ def _on_post(st: dict, bare: str, args: dict, resp) -> None:
             st["last_from"] = {"label": f"from {m.group(1)}'s Wingman", "at": _now_ms()}
     elif bare == "mindspace_skill":
         if mode in WRITE_SKILL and ok:
-            _learn(st, "expertise", "learned expertise")
+            _learn_expertise(st, _expertise_key(args), "learned expertise")
         elif mode in READ_SKILL and ok:
             st["recovered"] = int(st.get("recovered") or 0) + 1
     elif bare == "mindspace_memory":
@@ -199,12 +214,12 @@ def _on_post(st: dict, bare: str, args: dict, resp) -> None:
     elif bare == "user_persona" and mode.startswith("write") and ok:
         _learn(st, "", "learned how you work")
     elif bare == "evolve_skill" and mode == "apply" and ok:
-        _learn(st, "expertise", "evolved expertise")
+        _learn_expertise(st, _expertise_key(args), "evolved expertise")
     elif bare == "db_skill" and ok:
         st["recovered"] = int(st.get("recovered") or 0) + 1
         st["last_from"] = {"label": "from the DB Wiki", "at": _now_ms()}
     elif bare == "db_skill_upgrade" and ok:
-        _learn(st, "expertise", "learned expertise · DB Wiki")
+        _learn_expertise(st, "db-wiki", "learned expertise · DB Wiki")
     elif bare in ("ensure_auth", "open_scratchpad", "current_session") and text:
         m = re.search(r'"display_name"\s*:\s*"([^"]{1,60})"', text) or re.search(r'"email"\s*:\s*"([^"@]{1,40})@', text)
         if m and not st.get("user"):

@@ -110,6 +110,17 @@ print(f"[4] start_app_building after completion → session_id={resume.get('sess
 if resume.get("session_id") != DONE:
     failures.append(f"post-completion start_app_building would mint a stray (session_id={resume.get('session_id')!r})")
 
+# The Mindspace in focus gets the messages, whatever its stage: the fixes made in the finished
+# Mindspace are RECORDED (TLI Home, 2026-10-26: the chat stopped at completion).
+_log = _state / "catalyst-event-sink.log"
+_mark = len(_log.read_text().splitlines()) if _log.exists() else 0
+post("coding_workspace__bash", {"output": "fixed"})
+_tail = _log.read_text().splitlines()[_mark:] if _log.exists() else []
+_why = [ln.split("noop=")[-1] for ln in _tail if "noop=" in ln]
+print(f"[4b] a fix after completion → {_why[-1] if _why else 'recorded'}")
+if any("mode-not-recordable" in ln for ln in _tail):
+    failures.append("work after completion was skipped as mode-not-recordable — the sync gap")
+
 # A NEW Mindspace is still one deliberate step away — switch releases the binding.
 post("switch_mindspace", {"status": "ready_for_new", "paused": {"paused": True},
                           "pause_after_complete": True})

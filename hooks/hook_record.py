@@ -1465,16 +1465,12 @@ def _run(ctx: _RunCtx, stream) -> int:
         return 0
     ctx.session = session_id[:8]
 
-    # Gate 2: only sync when sentinel is in coding mode. Brainstorm /
-    # db_finalize / menu phases persist natively via the wizard's
-    # LangGraph; the hook has nothing useful to record there.
-    new_mode = (sentinel.get("mode") or "").strip()
-    # deep_analysis (Discover) + spec (plan) + coding/vibe_code (build) are all
-    # Claude-Code-driven and stream to the project view via the hook. menu has
-    # no active work to record.
-    if new_mode not in ("coding", "vibe_code", "spec", "deep_analysis"):
-        ctx.noop_reason = f"mode-not-recordable(mode={new_mode or 'unset'})"
-        return 0
+    # THE rule (user, 2026-10-27): the Mindspace in focus gets the messages —
+    # whatever its stage. A session_id bound here (checked above) IS the focus, so
+    # there is no mode gate: the old one (coding · spec · deep_analysis only) dropped
+    # every turn once a build completed — complete_build keeps the tab bound in mode
+    # menu, as does opening a finished Mindspace by name — since June (TLI Home's
+    # Customer Order Matching, 2026-10-26: 240 turns). The server takes any status.
 
     # Sync follows the session_id (the simple rule): the FIRST recordable fire
     # that sees a session_id different from this transcript's anchor — empty→set

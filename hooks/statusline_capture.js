@@ -8,7 +8,7 @@
  *
  *   recovered   skills, references, memories and DB Wiki reads brought back this session
  *   wingmen     the colleagues whose Wingmen were reached (name → last time)
- *   expertise   skill writes — the Curator "Learning expertise"
+ *   expertise   the expertises written or improved, each once (`learned` holds their keys)
  *   memories    memory saves — the Curator "Recording memories"
  *   inflight    the call running right now (PreToolUse sets it, PostToolUse clears it)
  *   last_from / last_learn   the newest of each, for the rotating panes
@@ -124,6 +124,20 @@ function learn(st, counter, label) {
   st.last_learn = { label, at: nowMs() };
 }
 
+// Expertise learned counts each expertise ONCE however many writes it took — a core
+// write plus three reference writes is one (the server: metrics.expertise_key).
+function learnExpertise(st, key, label) {
+  st.learned = Array.isArray(st.learned) ? st.learned : [];
+  if (!st.learned.includes(key)) st.learned.push(key);
+  st.expertise = st.learned.length;
+  st.last_learn = { label, at: nowMs() };
+}
+
+// The Mindspace whose expertise was written (the session id the PreToolUse hook stamps).
+function expertiseKey(args) {
+  return String(args.session_id || args.mindspace || 'mindspace');
+}
+
 function onPost(st, name, args, resp) {
   st.inflight = null;
   const text = textOf(resp);
@@ -159,7 +173,7 @@ function onPost(st, name, args, resp) {
       st.last_from = { label: `from ${m[1]}'s Wingman`, at: nowMs() };
     }
   } else if (name === 'mindspace_skill') {
-    if (WRITE_SKILL.has(mode) && ok) learn(st, 'expertise', 'learned expertise');
+    if (WRITE_SKILL.has(mode) && ok) learnExpertise(st, expertiseKey(args), 'learned expertise');
     else if (READ_SKILL.has(mode) && ok) st.recovered = (Number(st.recovered) || 0) + 1;
   } else if (name === 'mindspace_memory') {
     if (mode === 'save' && ok) learn(st, 'memories', 'recorded a memory');
@@ -171,12 +185,12 @@ function onPost(st, name, args, resp) {
   } else if (name === 'user_persona' && mode.startsWith('write') && ok) {
     learn(st, '', 'learned how you work');
   } else if (name === 'evolve_skill' && mode === 'apply' && ok) {
-    learn(st, 'expertise', 'evolved expertise');
+    learnExpertise(st, expertiseKey(args), 'evolved expertise');
   } else if (name === 'db_skill' && ok) {
     st.recovered = (Number(st.recovered) || 0) + 1;
     st.last_from = { label: 'from the DB Wiki', at: nowMs() };
   } else if (name === 'db_skill_upgrade' && ok) {
-    learn(st, 'expertise', 'learned expertise · DB Wiki');
+    learnExpertise(st, 'db-wiki', 'learned expertise · DB Wiki');
   } else if ((name === 'ensure_auth' || name === 'open_scratchpad' || name === 'current_session') && text) {
     const m = text.match(/"display_name"\s*:\s*"([^"]{1,60})"/) || text.match(/"email"\s*:\s*"([^"@]{1,40})@/);
     if (m && !st.user) st.user = m[1];
